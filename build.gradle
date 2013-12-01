@@ -1,0 +1,42 @@
+
+// *****************************************************************************
+//
+// *****************************************************************************
+
+subprojects {
+
+    apply plugin: 'java'
+    apply plugin: 'groovy'
+    apply plugin: 'maven'
+
+    version      = '1.0.0.SNAPSHOT'
+    group        = 'com.github.lburgazzoli.gradle'
+    ext.prefix   = 'gradle-plugin'
+
+    repositories {
+        mavenCentral()    
+        mavenLocal()
+    }
+
+    dependencies {
+        compile gradleApi()
+        compile localGroovy()
+    }
+
+    jar {
+        baseName = "${project.prefix}-${project.name}"
+
+        manifest.attributes['Implementation-Title'   ] = "${project.prefix}-${project.name}-${project.version}"
+        manifest.attributes['Implementation-Version' ] = project.version
+        manifest.attributes['Implementation-Vendor'  ] = 'lb'
+    }
+}
+
+// *****************************************************************************
+//
+// *****************************************************************************
+
+task wrapper(type: Wrapper) {
+    gradleVersion = '1.9'
+}
+

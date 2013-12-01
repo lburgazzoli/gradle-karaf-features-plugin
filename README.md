@@ -1,2 +1,2 @@
-lb-gradle-plugin
-================
+lb-gradle-plugins
+=================

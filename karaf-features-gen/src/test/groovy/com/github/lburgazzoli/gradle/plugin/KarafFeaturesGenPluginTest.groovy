@@ -16,20 +16,21 @@
  */
 package com.github.lburgazzoli.gradle.plugin
 
-import org.gradle.api.Plugin
 import org.gradle.api.Project
+import org.gradle.testfixtures.ProjectBuilder
+import org.junit.Test
+
+import static org.junit.Assert.assertTrue
 
 /**
  *
  */
-class KarafFeaturesGenPlugin implements Plugin<Project> {
+class KarafFeaturesGenPluginTest {
+    @Test
+    public void karafFeatursegenPluginAddsTaskzToProject() {
+        Project project = ProjectBuilder.builder().build()
+        project.apply plugin: 'karaf-featuresgen'
 
-    /**
-     *
-     * @param project
-     */
-    @Override
-    void apply(Project project) {
-        project.task('generateKarafFeature', type: KarafFeaturesGenTask)
+        assertTrue(project.tasks.generateKarafFeature instanceof KarafFeaturesGenTask)
     }
 }

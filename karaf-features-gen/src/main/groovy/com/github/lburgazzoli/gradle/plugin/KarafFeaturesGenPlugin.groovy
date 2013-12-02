@@ -30,6 +30,6 @@ class KarafFeaturesGenPlugin implements Plugin<Project> {
      */
     @Override
     void apply(Project project) {
-        project.task('generateKarafFeature', type: KarafFeaturesGenTask)
+        project.task('generateKarafFeatures', type: KarafFeaturesGenTask)
     }
 }

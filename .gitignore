@@ -4,6 +4,8 @@
 *.ear
 *.iml
 
+classes
+out
 build
 .idea
 

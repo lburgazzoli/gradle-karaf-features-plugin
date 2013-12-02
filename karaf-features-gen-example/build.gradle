@@ -1,4 +1,8 @@
 
+// *****************************************************************************
+//
+// *****************************************************************************
+
 buildscript {
     repositories {
         mavenCentral()
@@ -6,7 +10,10 @@ buildscript {
     }
         
     dependencies {
-        classpath 'com.github.lburgazzoli.gradle:gradle-plugin-karaf-features-gen:1.0.0.SNAPSHOT'
+        classpath project(':karaf-features-gen')
+
+        // in real-world project, the statement above should eb replaced with:
+        //   classpath 'com.github.lburgazzoli.gradle:gradle-plugin-karaf-features-gen:1.0.0.SNAPSHOT'
     }
 }
 

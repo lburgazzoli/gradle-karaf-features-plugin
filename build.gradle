@@ -42,9 +42,11 @@ subprojects {
     jar {
         baseName = "${project.prefix}-${project.name}"
 
-        manifest.attributes['Implementation-Title'   ] = "${project.prefix}-${project.name}-${project.version}"
-        manifest.attributes['Implementation-Version' ] = project.version
-        manifest.attributes['Implementation-Vendor'  ] = 'lb'
+        manifest {
+            attributes['Implementation-Title'   ] = "${project.prefix}-${project.name}-${project.version}"
+            attributes['Implementation-Version' ] = project.version
+            attributes['Implementation-Vendor'  ] = 'lb'
+        }
     }
 
     // *************************************************************************

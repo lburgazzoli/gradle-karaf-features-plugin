@@ -4,12 +4,28 @@
 // *****************************************************************************
 
 subprojects {
+    apply plugin: 'java'
     apply plugin: 'groovy'
     apply plugin: 'maven'
 
     version      = '1.0.0.SNAPSHOT'
     group        = 'com.github.lburgazzoli.gradle'
-    ext.prefix   = 'gradle-plugin'
+
+    ext {
+        prefix           = 'gradle-plugin'
+        isReleaseVersion = !version.endsWith("SNAPSHOT")
+        gitRoot          = "https://github.com/lburgazzoli"
+        gitProject       = "https://github.com/lburgazzoli/lb-gradle-plugins"
+        deploySnapshot   = "https://oss.sonatype.org/content/repositories/snapshots"
+
+        if(project.hasProperty('sonatypeUsername') && project.hasProperty('sonatypePassword')) {
+            ciUsr = sonatypeUsername
+            ciPwd = sonatypePassword
+        } else {
+            ciUsr = "$System.env.CI_DEPLOY_USERNAME"
+            ciPwd = "$System.env.CI_DEPLOY_PASSWORD"
+        }
+    }
 
     repositories {
         mavenCentral()    
@@ -29,6 +45,63 @@ subprojects {
         manifest.attributes['Implementation-Title'   ] = "${project.prefix}-${project.name}-${project.version}"
         manifest.attributes['Implementation-Version' ] = project.version
         manifest.attributes['Implementation-Vendor'  ] = 'lb'
+    }
+
+    // *************************************************************************
+    //
+    // *************************************************************************
+
+    task javadocJar(type: Jar, dependsOn: javadoc) {
+        classifier = 'javadoc'
+        from 'build/docs/javadoc'
+    }
+
+    task sourcesJar(type: Jar) {
+        from sourceSets.main.allSource
+        classifier = 'sources'
+    }
+
+    artifacts {
+        archives jar
+        archives javadocJar
+        archives sourcesJar
+    }
+
+    uploadArchives {
+        repositories {
+            mavenDeployer {
+
+                repository(url: deploySnapshot) {
+                    authentication(
+                        userName: "${project.ciUsr}",
+                        password: "${project.ciPwd}"
+                    )
+                }
+
+                pom {
+                    project {
+                        name = "${project.prefix}-${project.name}"
+                        description = "${project.prefix}-${project.name}"
+                        url = "${project.gitProject}"
+                        packaging = 'jar'
+
+                        licenses {
+                            license {
+                                name = "The Apache Software License, Version 2.0"
+                                url = "http://www.apache.org/licenses/LICENSE-2.0.txt"
+                                distribution = "repo"
+                            }
+                        }
+
+                        scm {
+                            url = "${project.gitProject}"
+                            connection = "scm:git:${project.gitProject}.git"
+                            developerConnection = "scm:git:${project.gitProject}.git"
+                        }
+                    }
+                }
+            }
+        }
     }
 }
 

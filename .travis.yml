@@ -1,8 +1,10 @@
 language:
   - java
-
 script:
-  - ./gradlew clean test
-
+  - ./gradlew :karaf-features-gen:test
 jdk:
   - oraclejdk7
+env:
+  global:
+    - secure: p4DRT394bJ7zKAh11nj5coH9amAolw/SObJ1r9njtoYGYtmZZInqaEBSGz68dIbF/W7tSDVIHIvHAA3epsilu1EcpMW7D1kcltxCY/ApqqHgcS1XQ9iR42wgUCAIJsnTtm8Gup+okmCgLuVqmCjRsz+HpNcvPLgTXGlYofGiu7k=
+    - secure: U1aAtdEub5Vx99acs6eOxbM6/vv6eL1qPaXPdKWGqTGI6GGdlNErIkSaSphZQ2GtlC0Tpj0lZJYUz1Zc0ImveTCV/y5oWCS9L6Zh2V+FS5djQM1ooVKUV4YdeVfQUt38bsZqoeJevPTNp/wlZz9SuLi1B5gSqMPhMmv1GCEIQCM=

@@ -9,7 +9,7 @@ subprojects {
     apply plugin: 'maven'
 
     version      = '1.0.0.SNAPSHOT'
-    group        = 'com.github.lburgazzoli.gradle'
+    group        = 'com.github.lburgazzoli'
 
     ext {
         prefix           = 'gradle-plugin'

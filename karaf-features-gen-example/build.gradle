@@ -1,4 +1,8 @@
 
+apply plugin: 'java'
+apply plugin: 'groovy'
+apply plugin: 'maven'
+
 // *****************************************************************************
 //
 // *****************************************************************************
@@ -7,6 +11,8 @@ buildscript {
     repositories {
         mavenCentral()
         mavenLocal()
+
+        maven { url "https://oss.sonatype.org/content/repositories/snapshots" }
     }
         
     dependencies {
@@ -24,5 +30,6 @@ dependencies {
     compile "org.apache.geronimo.specs:geronimo-jta_1.1_spec:1.1.1"
     compile "org.apache.geronimo.specs:geronimo-j2ee-management_1.1_spec:1.0.1"
 }
+
 
 apply plugin: 'karaf-featuresgen'

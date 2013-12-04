@@ -8,5 +8,6 @@ classes
 out
 build
 .idea
+.gradle
 
 

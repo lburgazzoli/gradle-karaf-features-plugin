@@ -1,3 +1,5 @@
+rootProject.name = 'lb-gradle-plugins'
+
 include "karaf-features-gen"
 
 

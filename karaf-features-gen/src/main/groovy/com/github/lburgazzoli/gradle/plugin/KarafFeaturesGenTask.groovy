@@ -28,10 +28,22 @@ class KarafFeaturesGenTask extends DefaultTask {
     def doExecuteTask() {
         def writer = new StringWriter()
         new MarkupBuilder(writer).features(xmlns:'http://karaf.apache.org/xmlns/features/v1.0.0') {
-            feature(name:'feature', version:'1.0.0') {
-                project.configurations.runtime.allDependencies.each { dep ->
-                    if(dep.group != null && dep.version != null) {
-                        bundle("mvn:${dep.group}/${dep.name}/${dep.version}")
+            if(project.subprojects.size() > 0) {
+                project.subprojects.each { subproject ->
+                    feature(name:"${subproject.name}", version:"${subproject.version}") {
+                        subproject.configurations.runtime.allDependencies.each { dep ->
+                            if(dep.group != null && dep.version != null) {
+                                bundle("mvn:${dep.group}/${dep.name}/${dep.version}")
+                            }
+                        }
+                    }
+                }
+            } else {
+                feature(name:"${project.name}", version:"${project.version}") {
+                    project.configurations.runtime.allDependencies.each { dep ->
+                        if(dep.group != null && dep.version != null) {
+                            bundle("mvn:${dep.group}/${dep.name}/${dep.version}")
+                        }
                     }
                 }
             }

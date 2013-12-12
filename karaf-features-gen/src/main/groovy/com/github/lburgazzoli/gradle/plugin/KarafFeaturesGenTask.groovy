@@ -1,5 +1,4 @@
 /**
- *
  * Copyright 2013 lb
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -32,7 +31,7 @@ class KarafFeaturesGenTask extends DefaultTask {
                 project.subprojects.each { subproject ->
                     feature(name:"${subproject.name}", version:"${subproject.version}") {
                         subproject.configurations.runtime.allDependencies.each { dep ->
-                            if(dep.group != null && dep.version != null) {
+                            if(dep.group != null && dep.version != null && !isExcluded(dep)) {
                                 bundle("mvn:${dep.group}/${dep.name}/${dep.version}")
                             }
                         }
@@ -41,7 +40,7 @@ class KarafFeaturesGenTask extends DefaultTask {
             } else {
                 feature(name:"${project.name}", version:"${project.version}") {
                     project.configurations.runtime.allDependencies.each { dep ->
-                        if(dep.group != null && dep.version != null) {
+                        if(dep.group != null && dep.version != null && !isExcluded(dep)) {
                             bundle("mvn:${dep.group}/${dep.name}/${dep.version}")
                         }
                     }
@@ -50,5 +49,15 @@ class KarafFeaturesGenTask extends DefaultTask {
         }
 
         println writer.toString()
+    }
+
+    def isExcluded(dep) {
+        for(String exclude : project.karafFeatures.excludes) {
+            if("${dep.group}/${dep.name}/${dep.version}".matches(exclude)) {
+                return true;
+            }
+        }
+
+        return false
     }
 }

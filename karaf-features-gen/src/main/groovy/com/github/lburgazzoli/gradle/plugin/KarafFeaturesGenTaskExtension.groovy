@@ -15,21 +15,9 @@
  */
 package com.github.lburgazzoli.gradle.plugin
 
-import org.gradle.api.Plugin
-import org.gradle.api.Project
-
 /**
  *
  */
-class KarafFeaturesGenPlugin implements Plugin<Project> {
-
-    /**
-     *
-     * @param project
-     */
-    @Override
-    void apply(Project project) {
-        project.extensions.create("karafFeatures", KarafFeaturesGenTaskExtension)
-        project.task('generateKarafFeatures', type: KarafFeaturesGenTask)
-    }
+class KarafFeaturesGenTaskExtension {
+    String[] excludes;
 }

@@ -16,7 +16,7 @@
 package com.github.lburgazzoli.gradle.plugin
 
 /**
- *
+ * Extensions for KarafFeaturesGenTask
  */
 class KarafFeaturesGenTaskExtension {
     String[] excludes;

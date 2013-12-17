@@ -19,7 +19,7 @@ package com.github.lburgazzoli.gradle.plugin
  * Extensions for KarafFeaturesGenTask
  */
 class KarafFeaturesGenTaskExtension {
-    String[] excludes;
-    String[] wraps;
-    Map<String,String> startLevels;
+    String[] excludes = [];
+    String[] wraps = [];
+    Map<String,String> startLevels = [:];
 }

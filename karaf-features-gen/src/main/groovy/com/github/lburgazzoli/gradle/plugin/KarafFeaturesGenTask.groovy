@@ -30,51 +30,18 @@ class KarafFeaturesGenTask extends DefaultTask {
     @TaskAction
     def doExecuteTask() {
         def writer = new StringWriter()
+        def builder = new MarkupBuilder(writer);
 
-        new MarkupBuilder(writer).features(xmlns:'http://karaf.apache.org/xmlns/features/v1.0.0') {
+        builder.features(xmlns:'http://karaf.apache.org/xmlns/features/v1.0.0') {
             if(project.subprojects.size() > 0) {
                 project.subprojects.each { subproject ->
                     feature(name:"${subproject.name}", version:"${subproject.version}") {
-                        subproject.configurations.runtime.allDependencies.each { dep ->
-                            if(dep.group != null && dep.version != null && !isExcluded(dep)) {
-                                def sl = getStartLevel(dep)
-                                def bundleStr = null
-
-                                if(isWrapped(dep)) {
-                                    bundleStr = "wrap:mvn:${dep.group}/${dep.name}/${dep.version}"
-                                } else {
-                                    bundleStr = "mvn:${dep.group}/${dep.name}/${dep.version}"
-                                }
-
-                                if(sl == null) {
-                                    bundle(bundleStr)
-                                } else {
-                                    bundle("start-level": sl,bundleStr)
-                                }
-                            }
-                        }
+                        processRuntimeDependencies(builder,subproject.configurations.runtime.allDependencies)
                     }
                 }
             } else {
                 feature(name:"${project.name}", version:"${project.version}") {
-                    project.configurations.runtime.allDependencies.each { dep ->
-                        if(dep.group != null && dep.version != null && !isExcluded(dep)) {
-                            def sl = getStartLevel(dep)
-                            def bundleStr = null
-
-                            if(isWrapped(dep)) {
-                                bundleStr = "wrap:mvn:${dep.group}/${dep.name}/${dep.version}"
-                            } else {
-                                bundleStr = "mvn:${dep.group}/${dep.name}/${dep.version}"
-                            }
-
-                            if(sl == null) {
-                                bundle(bundleStr)
-                            } else {
-                                bundle("start-level": sl,bundleStr)
-                            }
-                        }
-                    }
+                    processRuntimeDependencies(builder,project.configurations.runtime.allDependencies)
                 }
             }
         }
@@ -84,11 +51,36 @@ class KarafFeaturesGenTask extends DefaultTask {
 
     /**
      *
+     * @param builder
+     * @param dependencies
+     * @return
+     */
+    def processRuntimeDependencies(builder,dependencies) {
+        dependencies.each { dep ->
+            if(dep.group != null && dep.version != null && !isExcluded(dep)) {
+                def startLevel = getBundleStartLevel(dep)
+                def mavenUrl = "mvn:${dep.group}/${dep.name}/${dep.version}"
+
+                if(isWrapped(dep)) {
+                    mavenUrl = "wrap:${mavenUrl}"
+                }
+
+                if(startLevel == null) {
+                    builder.bundle(mavenUrl)
+                } else {
+                    builder.bundle("start-level": startLevel, mavenUrl)
+                }
+            }
+        }
+    }
+
+    /**
+     *
      * @param dep
      * @return
      */
     def isExcluded(dep) {
-        return matchPattern(dep,project.karafFeatures.excludes)
+        return matchesPattern(dep,project.karafFeatures.excludes)
     }
 
     /**
@@ -97,7 +89,7 @@ class KarafFeaturesGenTask extends DefaultTask {
      * @return
      */
     def isWrapped(dep) {
-        return matchPattern(dep,project.karafFeatures.wraps)
+        return matchesPattern(dep,project.karafFeatures.wraps)
     }
 
     /**
@@ -105,12 +97,12 @@ class KarafFeaturesGenTask extends DefaultTask {
      * @param dep
      * @return
      */
-    def getStartLevel(dep) {
+    def getBundleStartLevel(dep) {
         String startLevel = null
         if(project.karafFeatures.startLevels) {
             project.karafFeatures.startLevels.each { pattern, sl ->
                 if("${dep.group}/${dep.name}/${dep.version}".matches(pattern)) {
-                    startLevel = sl
+                    startLevel = sl;
                 }
             }
         }
@@ -124,7 +116,7 @@ class KarafFeaturesGenTask extends DefaultTask {
      * @param patterns
      * @return
      */
-    def matchPattern(dep,patterns) {
+    def matchesPattern(dep,patterns) {
         for(String pattern : patterns) {
             if("${dep.group}/${dep.name}/${dep.version}".matches(pattern)) {
                 return true;

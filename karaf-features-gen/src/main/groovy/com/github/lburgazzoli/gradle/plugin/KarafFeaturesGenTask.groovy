@@ -99,11 +99,9 @@ class KarafFeaturesGenTask extends DefaultTask {
      */
     def getBundleStartLevel(dep) {
         String startLevel = null
-        if(project.karafFeatures.startLevels) {
-            project.karafFeatures.startLevels.each { pattern, sl ->
-                if("${dep.group}/${dep.name}/${dep.version}".matches(pattern)) {
-                    startLevel = sl;
-                }
+        project.karafFeatures.startLevels.each { pattern, sl ->
+            if("${dep.group}/${dep.name}/${dep.version}".matches(pattern as String)) {
+                startLevel = sl;
             }
         }
 

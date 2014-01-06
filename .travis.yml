@@ -1,6 +1,6 @@
 language: java
 script:
-- ./gradlew test uploadArchive
+- ./gradlew test uploadArchives
 jdk:
 - oraclejdk7
 env:

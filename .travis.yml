@@ -1,9 +1,9 @@
 language: java
 script:
-- ./gradlew test uploadArchives
+- "./gradlew test uploadArchives"
 jdk:
 - oraclejdk7
 env:
   global:
-  - secure: bfJjBKzoyua5SXEPOb2bY+BtDtsUhkawzENmfxkLPgKwV1/M8TgJgOU5yyh6rHnMHRioOn4mWc0ral1dNZAhNRkny+w2dNlSEbBqF1Tm50Z51ompfdCJKw1BWDMof3Z7sfbXO7qSU8BnRpwPsCHvsC+PdCaGRPiNWHRJibWiafw=
-  - secure: P7BSixL8iu3LsqppM6hUfzpALpCJAyc6yBPuIVBOQFwPEmfoSnKIECS3XDo9KEg57iomjxTdl3/q3TT08y+bV9q90Gs5argxk8E9dNfrU0W8WJV6OFGPYjiZ+yDvMbD98yjhIR5iGw/H7DhU1XbkfIUhoXTPjGk8wkkOCPh2fek=
+  - secure: b+VqxVmQeTRkYvADg1DnmQAF5YZY/Ys2OWGMGNB/kegl/r4kHD9pUPHXwuBd/pSUBB67DbTPjQ2nSDZVHRPXWAbccg9VruRYEfIE8DxX+2XiTfCevP0xvtxBVnQv8mXpkfw1V7KjXSPT+ELO5rZceo5Ci5/cQe0A4WBIOERXtzA=
+  - secure: iWzzLqeUdj8A+1E7gVcM3SlByRfHu1zON8wIl0TxWnFyBzP8ijfU7eOHVI7cGCOy80fPGp6OiVlkLGvq9fE77GTMW3m1TlV8EjLPXblo6w1rLlojK9dPSWAZoFyrT0Q8+tBFf8C3GdLPOqY5gKfUt/ZYb5L/luZhr3GUzXHU2VE=

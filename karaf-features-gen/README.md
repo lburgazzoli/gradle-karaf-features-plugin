@@ -39,6 +39,10 @@ karafFeatures {
         'org.apache.geronimo.specs/.*':'50',
         'org.apache.commons/.*':'60',
     ]
+    
+    // if outputFile is not provided, the output is written to the standard
+    // output.
+    outputFile = new File('features.xml')
 }
 
 ```

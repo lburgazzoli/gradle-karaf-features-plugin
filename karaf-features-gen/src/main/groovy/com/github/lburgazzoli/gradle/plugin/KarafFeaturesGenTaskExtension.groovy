@@ -22,4 +22,5 @@ class KarafFeaturesGenTaskExtension {
     String[] excludes = [];
     String[] wraps = [];
     Map<String,String> startLevels = [:];
+    File outputFile = null;
 }

@@ -12,6 +12,7 @@ subprojects {
     group        = 'com.github.lburgazzoli'
 
     ext {
+        junitVersion     = '4.11'
         prefix           = 'gradle-plugin'
         isReleaseVersion = !version.endsWith("SNAPSHOT")
         gitRoot          = "https://github.com/lburgazzoli"
@@ -36,14 +37,14 @@ subprojects {
         compile gradleApi()
         compile localGroovy()
 
-        testCompile 'junit:junit:4.11'
+        testCompile "junit:junit:$junitVersion"
     }
 
     jar {
         baseName = "${project.prefix}-${project.name}"
 
         manifest {
-            attributes['Implementation-Title'   ] = "${project.prefix}-${project.name}-${project.version}"
+            attributes['Implementation-Title'   ] = "${group}.${project.prefix}-${project.name}-${project.version}"
             attributes['Implementation-Version' ] = project.version
             attributes['Implementation-Vendor'  ] = 'lb'
         }
@@ -83,7 +84,7 @@ subprojects {
                 pom {
                     project {
                         name = "${project.prefix}-${project.name}"
-                        description = "${project.prefix}-${project.name}"
+                        description = "${group}.${project.prefix}-${project.name}"
                         url = "${project.gitProject}"
                         packaging = 'jar'
 

@@ -30,16 +30,6 @@ import java.util.jar.Manifest
  *
  */
 class KarafFeaturesGenTask extends DefaultTask {
-    String outputFileName = "features.xml"
-
-    @OutputDirectory
-    def File outputDir = new File(project.buildDir,"features")
-
-    @OutputFile
-    public File getOutputFile() {
-        new File(outputDir, outputFileName)
-    }
-
     public KarafFeaturesGenTask() {
         getOutputs().upToDateWhen(Specs.satisfyNone());
     }
@@ -50,7 +40,7 @@ class KarafFeaturesGenTask extends DefaultTask {
     @TaskAction
     def doExecuteTask() {
         def writer = new StringWriter()
-        def builder = new MarkupBuilder(writer);
+        def builder = new MarkupBuilder(writer)
 
         builder.features(xmlns:'http://karaf.apache.org/xmlns/features/v1.0.0') {
             if(project.subprojects.size() > 0) {
@@ -68,9 +58,13 @@ class KarafFeaturesGenTask extends DefaultTask {
             }
         }
 
-        def out = new BufferedWriter(new FileWriter(getOutputFile()))
-        out.write(writer.toString())
-        out.close()
+        if(project.karafFeatures.outputFile != null) {
+            def out = new BufferedWriter(new FileWriter(project.karafFeatures.outputFile))
+            out.write(writer.toString())
+            out.close()
+        } else {
+            println writer.toString()
+        }
     }
 
     /**

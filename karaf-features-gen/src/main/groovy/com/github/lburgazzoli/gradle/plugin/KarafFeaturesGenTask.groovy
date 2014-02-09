@@ -17,12 +17,32 @@ package com.github.lburgazzoli.gradle.plugin
 
 import groovy.xml.MarkupBuilder
 import org.gradle.api.DefaultTask
+import org.gradle.api.artifacts.ResolvedArtifact
+import org.gradle.api.specs.Specs
+import org.gradle.api.tasks.OutputDirectory
+import org.gradle.api.tasks.OutputFile
 import org.gradle.api.tasks.TaskAction
+
+import java.util.jar.JarFile
+import java.util.jar.Manifest
 
 /**
  *
  */
 class KarafFeaturesGenTask extends DefaultTask {
+    String outputFileName = "features.xml"
+
+    @OutputDirectory
+    def File outputDir = new File(project.buildDir,"features")
+
+    @OutputFile
+    public File getOutputFile() {
+        new File(outputDir, outputFileName)
+    }
+
+    public KarafFeaturesGenTask() {
+        getOutputs().upToDateWhen(Specs.satisfyNone());
+    }
 
     /**
      *
@@ -36,17 +56,21 @@ class KarafFeaturesGenTask extends DefaultTask {
             if(project.subprojects.size() > 0) {
                 project.subprojects.each { subproject ->
                     feature(name:"${subproject.name}", version:"${subproject.version}") {
-                        processRuntimeDependencies(builder,subproject.configurations.runtime.allDependencies)
+                        processRuntimeDependencies(builder,
+                                subproject.configurations.runtime.resolvedConfiguration.resolvedArtifacts)
                     }
                 }
             } else {
                 feature(name:"${project.name}", version:"${project.version}") {
-                    processRuntimeDependencies(builder,project.configurations.runtime.allDependencies)
+                    processRuntimeDependencies(builder,
+                            project.configurations.runtime.resolvedConfiguration.resolvedArtifacts)
                 }
             }
         }
 
-        println writer.toString()
+        def out = new BufferedWriter(new FileWriter(getOutputFile()))
+        out.write(writer.toString())
+        out.close()
     }
 
     /**
@@ -55,11 +79,11 @@ class KarafFeaturesGenTask extends DefaultTask {
      * @param dependencies
      * @return
      */
-    def processRuntimeDependencies(builder,dependencies) {
-        dependencies.each { dep ->
-            if(dep.group != null && dep.version != null && !isExcluded(dep)) {
+    def processRuntimeDependencies(builder, dependencyArtifacts) {
+        dependencyArtifacts.each { dep ->
+            if( dep.moduleVersion.id.group != null && dep.moduleVersion.id.version != null && !isExcluded(dep) ) {
                 def startLevel = getBundleStartLevel(dep)
-                def mavenUrl = "mvn:${dep.group}/${dep.name}/${dep.version}"
+                def mavenUrl = "mvn:${dep.moduleVersion.id.group}/${dep.moduleVersion.id.name}/${dep.moduleVersion.id.version}"
 
                 if(isWrapped(dep)) {
                     mavenUrl = "wrap:${mavenUrl}"
@@ -89,7 +113,27 @@ class KarafFeaturesGenTask extends DefaultTask {
      * @return
      */
     def isWrapped(dep) {
-        return matchesPattern(dep,project.karafFeatures.wraps)
+        return matchesPattern(dep,project.karafFeatures.wraps) || !isOsgi(dep.file)
+    }
+
+    /**
+     * Method to determine if a given jar file is am OSGi bundle.
+     * This is useful for determining if we need to wrap it, determined by the existence
+     * of a Bundle-SymbolicName manifest attribute..
+     * @param jar The file to check.
+     * @return True if this jar is an OSGi bundle
+     */
+    static boolean isOsgi(File jar) {
+        JarFile jarFile = new JarFile(jar);
+        Manifest manifest = jarFile.getManifest();
+        if( manifest != null ) {
+            Object value = manifest.getMainAttributes().getValue("Bundle-SymbolicName")
+            if( value != null && ! value.toString().isEmpty() ) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /**
@@ -100,7 +144,7 @@ class KarafFeaturesGenTask extends DefaultTask {
     def getBundleStartLevel(dep) {
         String startLevel = null
         project.karafFeatures.startLevels.each { pattern, sl ->
-            if("${dep.group}/${dep.name}/${dep.version}".matches(pattern as String)) {
+            if("${dep.moduleVersion.id.group}/${dep.moduleVersion.id.name}/${dep.moduleVersion.id.version}".matches(pattern as String)) {
                 startLevel = sl;
             }
         }
@@ -114,9 +158,9 @@ class KarafFeaturesGenTask extends DefaultTask {
      * @param patterns
      * @return
      */
-    def matchesPattern(dep,patterns) {
+    static def matchesPattern(ResolvedArtifact dep,patterns) {
         for(String pattern : patterns) {
-            if("${dep.group}/${dep.name}/${dep.version}".matches(pattern)) {
+            if("${dep.moduleVersion.id.group}/${dep.moduleVersion.id.name}/${dep.moduleVersion.id.version}".matches(pattern)) {
                 return true;
             }
         }

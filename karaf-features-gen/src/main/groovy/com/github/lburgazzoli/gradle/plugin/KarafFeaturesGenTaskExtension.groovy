@@ -23,4 +23,5 @@ class KarafFeaturesGenTaskExtension {
     String[] wraps = [];
     Map<String,String> startLevels = [:];
     File outputFile = null;
+    List<String> extraBundles = [];
 }

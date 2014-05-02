@@ -40,6 +40,11 @@ karafFeatures {
         'org.apache.commons/.*':'60',
     ]
     
+    extraBundles = [
+        'mvn:mygroup:mypackage:myversion',
+        'mvn:mygroup2:mypackage2:myversion2'
+    ]
+    
     // if outputFile is not provided, the output is written to the standard
     // output.
     outputFile = new File('features.xml')

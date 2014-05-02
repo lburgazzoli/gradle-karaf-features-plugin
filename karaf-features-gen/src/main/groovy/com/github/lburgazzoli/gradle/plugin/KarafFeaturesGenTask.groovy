@@ -48,12 +48,18 @@ class KarafFeaturesGenTask extends DefaultTask {
                     feature(name:"${subproject.name}", version:"${subproject.version}") {
                         processRuntimeDependencies(builder,
                                 subproject.configurations.runtime.resolvedConfiguration.resolvedArtifacts)
+                        project.karafFeatures.extraBundles.each { dep ->
+                            builder.bundle(bundl)
+                        }
                     }
                 }
             } else {
                 feature(name:"${project.name}", version:"${project.version}") {
                     processRuntimeDependencies(builder,
                             project.configurations.runtime.resolvedConfiguration.resolvedArtifacts)
+                    project.karafFeatures.extraBundles.each { bundl ->
+                        builder.bundle(bundl)
+                    }
                 }
             }
         }

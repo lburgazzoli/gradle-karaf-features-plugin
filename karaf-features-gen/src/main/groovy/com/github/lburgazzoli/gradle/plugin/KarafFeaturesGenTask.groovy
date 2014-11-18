@@ -30,6 +30,7 @@ import java.util.jar.Manifest
  *
  */
 class KarafFeaturesGenTask extends DefaultTask {
+		
     public KarafFeaturesGenTask() {
         getOutputs().upToDateWhen(Specs.satisfyNone());
     }
@@ -49,7 +50,7 @@ class KarafFeaturesGenTask extends DefaultTask {
                         processRuntimeDependencies(builder,
                                 subproject.configurations.runtime.resolvedConfiguration.resolvedArtifacts)
                         project.karafFeatures.extraBundles.each { dep ->
-                            builder.bundle(bundl)
+                            builder.bundle(dep)
                         }
                     }
                 }

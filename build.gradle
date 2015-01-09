@@ -1,3 +1,18 @@
+// *****************************************************************************
+// 
+// *****************************************************************************
+
+buildscript {
+    repositories {
+        mavenCentral()
+        mavenLocal()
+        jcenter()
+    }
+
+    dependencies {
+        classpath 'com.bmuschko:gradle-nexus-plugin:2.2'
+    }
+}
 
 // *****************************************************************************
 //
@@ -7,44 +22,47 @@ subprojects {
     apply plugin: 'java'
     apply plugin: 'groovy'
     apply plugin: 'maven'
+    apply plugin: 'com.bmuschko.nexus'
 
     version      = '1.0.0.SNAPSHOT'
     group        = 'com.github.lburgazzoli'
 
     ext {
-        junitVersion     = '4.11'
-        prefix           = 'gradle-plugin'
+        gradleVersion    = '2.2.1'
+        gradleScriptDir  = "${rootProject.projectDir}/gradle"
         isReleaseVersion = !version.endsWith("SNAPSHOT")
         gitRoot          = "https://github.com/lburgazzoli"
         gitProject       = "https://github.com/lburgazzoli/lb-gradle-plugins"
-        deploySnapshot   = "https://oss.sonatype.org/content/repositories/snapshots"
 
-        if(project.hasProperty('sonatypeUsername') && project.hasProperty('sonatypePassword')) {
-            ciUsr = sonatypeUsername
-            ciPwd = sonatypePassword
-        } else {
-            ciUsr = "$System.env.CI_DEPLOY_USERNAME"
-            ciPwd = "$System.env.CI_DEPLOY_PASSWORD"
+        if(!project.hasProperty('nexusUsername') && !project.hasProperty('nexusPassword')) {
+            if (project.hasProperty('sonatypeUsername') && project.hasProperty('sonatypePassword')) {
+                nexusUsername = sonatypeUsername
+                nexusPassword = sonatypePassword
+            } else {
+                nexusUsername = "$System.env.CI_DEPLOY_USERNAME"
+                nexusPassword = "$System.env.CI_DEPLOY_PASSWORD"
+            }
         }
     }
 
     repositories {
         mavenCentral()    
         mavenLocal()
+        jcenter()
     }
 
     dependencies {
         compile gradleApi()
         compile localGroovy()
 
-        testCompile "junit:junit:$junitVersion"
+        testCompile "junit:junit:4.12"
     }
 
     jar {
-        baseName = "${project.prefix}-${project.name}"
+        baseName = "${project.name}"
 
         manifest {
-            attributes['Implementation-Title'   ] = "${group}.${project.prefix}-${project.name}-${project.version}"
+            attributes['Implementation-Title'   ] = "${group}.${project.name}-${project.version}"
             attributes['Implementation-Version' ] = project.version
             attributes['Implementation-Vendor'  ] = 'lb'
         }
@@ -53,56 +71,36 @@ subprojects {
     // *************************************************************************
     //
     // *************************************************************************
-
-    task javadocJar(type: Jar, dependsOn: javadoc) {
-        classifier = 'javadoc'
-        from 'build/docs/javadoc'
+    
+    nexus {
+        sign    = false
     }
 
-    task sourcesJar(type: Jar) {
-        from sourceSets.main.allSource
-        classifier = 'sources'
+    extraArchive {
+        javadoc = true
+        sources = true
+        tests   = false
     }
 
-    artifacts {
-        archives jar
-        archives javadocJar
-        archives sourcesJar
-    }
+    modifyPom {
+        project {
+            name          = "${project.name}"
+            description   = "${project.name}"
+            url           = "${project.gitProject}"
+            packaging     = 'jar'
 
-    uploadArchives {
-        repositories {
-            mavenDeployer {
-
-                repository(url: deploySnapshot) {
-                    authentication(
-                        userName: "${project.ciUsr}",
-                        password: "${project.ciPwd}"
-                    )
+            licenses {
+                license {
+                    name         = "The Apache Software License, Version 2.0"
+                    url          = "http://www.apache.org/licenses/LICENSE-2.0.txt"
+                    distribution = "repo"
                 }
+            }
 
-                pom {
-                    project {
-                        name = "${project.prefix}-${project.name}"
-                        description = "${group}.${project.prefix}-${project.name}"
-                        url = "${project.gitProject}"
-                        packaging = 'jar'
-
-                        licenses {
-                            license {
-                                name = "The Apache Software License, Version 2.0"
-                                url = "http://www.apache.org/licenses/LICENSE-2.0.txt"
-                                distribution = "repo"
-                            }
-                        }
-
-                        scm {
-                            url = "${project.gitProject}"
-                            connection = "scm:git:${project.gitProject}.git"
-                            developerConnection = "scm:git:${project.gitProject}.git"
-                        }
-                    }
-                }
+            scm {
+                url                 = "${project.gitProject}"
+                connection          = "scm:git:${project.gitProject}.git"
+                developerConnection = "scm:git:${project.gitProject}.git"
             }
         }
     }
@@ -113,6 +111,5 @@ subprojects {
 // *****************************************************************************
 
 task wrapper(type: Wrapper) {
-    gradleVersion = '2.1'
+    gradleVersion = "$gradleVersion"
 }
-

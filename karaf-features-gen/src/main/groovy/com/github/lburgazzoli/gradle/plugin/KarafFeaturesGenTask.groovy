@@ -15,63 +15,56 @@
  */
 package com.github.lburgazzoli.gradle.plugin
 
-import groovy.xml.MarkupBuilder
-import org.gradle.api.DefaultTask
-import org.gradle.api.artifacts.ResolvedArtifact
-import org.gradle.api.specs.Specs
-import org.gradle.api.tasks.OutputDirectory
-import org.gradle.api.tasks.OutputFile
-import org.gradle.api.tasks.TaskAction
-
 import java.util.jar.JarFile
 import java.util.jar.Manifest
+
+import org.gradle.api.DefaultTask
+import org.gradle.api.artifacts.Configuration
+import org.gradle.api.artifacts.ResolvedArtifact
+import org.gradle.api.specs.Specs
+import org.gradle.api.tasks.TaskAction
+
+import groovy.xml.MarkupBuilder
 
 /**
  *
  */
 class KarafFeaturesGenTask extends DefaultTask {
+    public static final String NAME = 'generateKarafFeatures'
 		
     public KarafFeaturesGenTask() {
         getOutputs().upToDateWhen(Specs.satisfyNone());
     }
 
-    /**
-     *
-     */
     @TaskAction
     def doExecuteTask() {
         def writer = new StringWriter()
         def builder = new MarkupBuilder(writer)
 
+        KarafFeaturesGenTaskExtension extension = project.extensions.findByName( KarafFeaturesGenTaskExtension.NAME ) as KarafFeaturesGenTaskExtension
+
         builder.features(xmlns:'http://karaf.apache.org/xmlns/features/v1.0.0') {
-            if(project.subprojects.size() > 0) {
-                project.subprojects.each { subproject ->
-                    feature(name:"${subproject.name}", version:"${subproject.version}") {
-                        processRuntimeDependencies(builder,
-                                subproject.configurations.runtime.resolvedConfiguration.resolvedArtifacts)
-                        project.karafFeatures.extraBundles.each { dep ->
-                            builder.bundle(dep)
-                        }
-                    }
-                }
-            } else {
-                feature(name:"${project.name}", version:"${project.version}") {
-                    processRuntimeDependencies(builder,
-                            project.configurations.runtime.resolvedConfiguration.resolvedArtifacts)
-                    project.karafFeatures.extraBundles.each { bundl ->
-                        builder.bundle(bundl)
+            extension.projects.each { project ->
+                builder.feature(name:"${project.name}", version:"${project.version}") {
+                    generateBundles( builder, project.configurations.runtime )
+                    extension.extraBundles.each { dep ->
+                        builder.bundle( dep )
                     }
                 }
             }
         }
 
-        if(project.karafFeatures.outputFile != null) {
-            def out = new BufferedWriter(new FileWriter(project.karafFeatures.outputFile))
+        if ( extension.outputFile != null ) {
+            def out = new BufferedWriter(new FileWriter(extension.outputFile))
             out.write(writer.toString())
             out.close()
         } else {
             println writer.toString()
         }
+    }
+
+    def generateBundles(MarkupBuilder builder, Configuration configuration) {
+        processRuntimeDependencies(builder, configuration.resolvedConfiguration.resolvedArtifacts )
     }
 
     /**
@@ -80,7 +73,7 @@ class KarafFeaturesGenTask extends DefaultTask {
      * @param dependencies
      * @return
      */
-    def processRuntimeDependencies(builder, dependencyArtifacts) {
+    def processRuntimeDependencies(MarkupBuilder builder, Set<ResolvedArtifact> dependencyArtifacts) {
         dependencyArtifacts.each { dep ->
             if( dep.moduleVersion.id.group != null && dep.moduleVersion.id.version != null && !isExcluded(dep) ) {
                 def startLevel = getBundleStartLevel(dep)

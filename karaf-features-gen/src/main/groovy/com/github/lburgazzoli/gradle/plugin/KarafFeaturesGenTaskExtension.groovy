@@ -15,13 +15,28 @@
  */
 package com.github.lburgazzoli.gradle.plugin
 
+import org.gradle.api.Project
+
 /**
  * Extensions for KarafFeaturesGenTask
  */
 class KarafFeaturesGenTaskExtension {
+    public static final String NAME = 'karafFeatures'
+
     String[] excludes = [];
     String[] wraps = [];
     Map<String,String> startLevels = [:];
     File outputFile = null;
     List<String> extraBundles = [];
+    Set<Project> projects;
+
+    KarafFeaturesGenTaskExtension(Project project) {
+        // set up the defaults for projects array to maintain backwards compatibility...
+        if ( project.subprojects.size() > 0 ) {
+            projects = project.subprojects;
+        }
+        else {
+            projects = [project];
+        }
+    }
 }

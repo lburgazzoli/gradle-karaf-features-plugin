@@ -19,6 +19,7 @@ import java.util.jar.JarFile
 import java.util.jar.Manifest
 
 import org.gradle.api.DefaultTask
+import org.gradle.api.Project
 import org.gradle.api.artifacts.ModuleVersionIdentifier
 import org.gradle.api.artifacts.ResolvedArtifact
 import org.gradle.api.artifacts.result.ResolvedComponentResult
@@ -26,6 +27,7 @@ import org.gradle.api.artifacts.result.ResolvedDependencyResult
 import org.gradle.api.artifacts.result.UnresolvedDependencyResult
 import org.gradle.api.specs.Specs
 import org.gradle.api.tasks.TaskAction
+import org.gradle.api.tasks.bundling.Jar
 
 import groovy.xml.MarkupBuilder
 
@@ -37,7 +39,20 @@ class KarafFeaturesGenTask extends DefaultTask {
     public static final String NAME = 'generateKarafFeatures'
 
     public KarafFeaturesGenTask() {
-        getOutputs().upToDateWhen(Specs.satisfyNone());
+        project.afterEvaluate {
+            extension.projects.each { selectedProject ->
+                // we need access the jar for any project we generate feature for
+                dependsOn( selectedProject.tasks.jar )
+
+                // we also want our inputs to be based on the runtime configuration
+                inputs.files( selectedProject.configurations.runtime )
+            }
+
+            // if there is an output file, add that as an output
+            if ( extension.outputFile != null ) {
+                outputs.file( extension.outputFile )
+            }
+        }
     }
 
     @TaskAction
@@ -45,17 +60,15 @@ class KarafFeaturesGenTask extends DefaultTask {
         def writer = new StringWriter()
         def builder = new MarkupBuilder(writer)
 
-        // Don't keep looking it up...
-        KarafFeaturesGenTaskExtension extension = project.extensions.findByName( KarafFeaturesGenTaskExtension.NAME ) as KarafFeaturesGenTaskExtension
-
-        // The LinkedHashSet here will hold the dependencies in order, transitivity depth first
-        LinkedHashSet<ResolvedComponentResult> orderedDependencies = new LinkedHashSet<ResolvedComponentResult>()
-        collectOrderedDependencies( orderedDependencies, project.configurations.runtime.incoming.resolutionResult.root, extension )
-
         builder.features(xmlns:'http://karaf.apache.org/xmlns/features/v1.0.0') {
-            extension.projects.each { project ->
-                builder.feature(name:"${project.name}", version:"${project.version}") {
-                    generateBundles( builder, orderedDependencies, extension )
+            extension.projects.each { selectedProject ->
+                // The LinkedHashSet here will hold the dependencies in order, transitivity depth first
+                LinkedHashSet<ResolvedComponentResult> orderedDependencies = new LinkedHashSet<ResolvedComponentResult>()
+                collectOrderedDependencies( orderedDependencies, selectedProject.configurations.runtime.incoming.resolutionResult.root )
+
+                builder.feature(name:"${selectedProject.name}", version:"${selectedProject.version}") {
+                    generateBundles( selectedProject, builder, orderedDependencies )
+
                     extension.extraBundles.each { extraBundle ->
                         builder.bundle( extraBundle )
                     }
@@ -79,13 +92,11 @@ class KarafFeaturesGenTask extends DefaultTask {
      *
      * @param orderedDependencies The ordered set of dependencies being built
      * @param resolvedComponentResult The dependency to process
-     * @param extension The karafFeatures extension
      */
-    static void collectOrderedDependencies(
+    void collectOrderedDependencies(
             LinkedHashSet<ResolvedComponentResult> orderedDependencies,
-            ResolvedComponentResult resolvedComponentResult,
-            KarafFeaturesGenTaskExtension extension) {
-        if ( shouldExclude( resolvedComponentResult, extension ) ) {
+            ResolvedComponentResult resolvedComponentResult) {
+        if ( shouldExclude( resolvedComponentResult ) ) {
             return;
         }
 
@@ -97,7 +108,7 @@ class KarafFeaturesGenTask extends DefaultTask {
                 return;
             }
 
-            collectOrderedDependencies( orderedDependencies, ( (ResolvedDependencyResult) it ).selected, extension )
+            collectOrderedDependencies( orderedDependencies, ( (ResolvedDependencyResult) it ).selected )
         }
 
         // then add this one
@@ -108,11 +119,10 @@ class KarafFeaturesGenTask extends DefaultTask {
      * Should the dependency indicated be excluded from adding as a bundle to the feature?
      *
      * @param dep The dependency resolution result for the dependency to check
-     * @param extension The karafFeatures extension
      *
      * @return {@code true} indicates the dependency should be excluded; {@code false} indicates it should not.
      */
-    static def shouldExclude(ResolvedComponentResult dep, KarafFeaturesGenTaskExtension extension) {
+    def shouldExclude(ResolvedComponentResult dep) {
         return matchesPattern( dep, extension.excludes )
     }
 
@@ -121,29 +131,28 @@ class KarafFeaturesGenTask extends DefaultTask {
      *
      * @param builder The MarkupBuilder to use.
      * @param orderedDependencies The ordered set of dependencies
-     * @param extension The karafFeatures extension
      */
     void generateBundles(
+            Project selectedProject,
             MarkupBuilder builder,
-            LinkedHashSet<ResolvedComponentResult> orderedDependencies,
-            KarafFeaturesGenTaskExtension extension) {
+            LinkedHashSet<ResolvedComponentResult> orderedDependencies) {
 
         // The determination of whether to wrap partially involves seeing if the
         // artifact (file) resolved from the dependency defined OSGi metadata.  So we need a Map
         // of the ResolvedArtifacts by their identifier (GAV)
         def Map<ModuleVersionIdentifier,ResolvedArtifact> resolvedArtifactMap = new HashMap<ModuleVersionIdentifier,ResolvedArtifact>()
-        project.configurations.runtime.resolvedConfiguration.resolvedArtifacts.each {
+        selectedProject.configurations.runtime.resolvedConfiguration.resolvedArtifacts.each {
             resolvedArtifactMap.put( it.moduleVersion.id, it );
         }
 
         orderedDependencies.each { dep ->
             def mavenUrl = "mvn:${dep.moduleVersion.group}/${dep.moduleVersion.name}/${dep.moduleVersion.version}"
 
-            if ( shouldWrap( dep, extension, resolvedArtifactMap ) ) {
+            if ( shouldWrap( dep, selectedProject, resolvedArtifactMap ) ) {
                 mavenUrl = "wrap:${mavenUrl}"
             }
 
-            def startLevel = getBundleStartLevel(dep, extension)
+            def startLevel = getBundleStartLevel( dep )
             if ( startLevel == null ) {
                 builder.bundle(mavenUrl)
             }
@@ -158,39 +167,40 @@ class KarafFeaturesGenTask extends DefaultTask {
      *
      * @param dep The dependency to check
      * @param extension The karafFeatures extension
-     * @param resolvedArtifactMap The map of GAV->ResolvedArtifact
      *
      * @return {@code true} to indicate that the dependency should be wrapped; {@code false} indicates it should not.
      */
-    static boolean shouldWrap(
+    boolean shouldWrap(
             ResolvedComponentResult dep,
-            KarafFeaturesGenTaskExtension extension,
+            Project selectedProject,
             Map<ModuleVersionIdentifier,ResolvedArtifact> resolvedArtifactMap) {
-        return matchesPattern( dep, extension.wraps) || !isOsgi( dep, resolvedArtifactMap )
-    }
-
-    /**
-     * Method to determine if a given jar file is am OSGi bundle.
-     * This is useful for determining if we need to wrap it, determined by the existence
-     * of a Bundle-SymbolicName manifest attribute..
-     *
-     * @param dep The dependency to check.
-     * @param resolvedArtifactMap Map of dependency ids (GAV) to ResolvedArtifact
-     *
-     * @return True if this dependency resolved to a jar with an OSGi bundle
-     */
-    static boolean isOsgi(ResolvedComponentResult dep, Map<ModuleVersionIdentifier,ResolvedArtifact> resolvedArtifactMap) {
-        ResolvedArtifact resolvedArtifact = resolvedArtifactMap.get( dep.moduleVersion )
-        if ( resolvedArtifact == null ) {
-            // then what?
-            return false;
+        if ( matchesPattern( dep, extension.wraps ) ) {
+            return true;
         }
 
-        JarFile jarFile = new JarFile( resolvedArtifact.file );
+        if ( matchesPattern( dep, "${selectedProject.group}/${selectedProject.name}/${selectedProject.version}") ) {
+            return !hasOsgiManifestHeaders( ( selectedProject.tasks.jar as Jar ).archivePath )
+        }
+
+        ResolvedArtifact resolvedArtifact = resolvedArtifactMap.get( dep.moduleVersion )
+        if ( resolvedArtifact != null ) {
+            return !hasOsgiManifestHeaders( resolvedArtifact.file )
+        }
+
+        return true
+    }
+
+    public boolean hasOsgiManifestHeaders(File file) {
+        JarFile jarFile = new JarFile( file );
         Manifest manifest = jarFile.getManifest();
         if ( manifest != null ) {
-            Object value = manifest.getMainAttributes().getValue("Bundle-SymbolicName")
-            if( value != null && ! value.toString().isEmpty() ) {
+            logger.lifecycle( "Found manifest [${file.absolutePath}], checking for OSGi metadata" )
+            if ( hasAttribute( manifest, "Bundle-SymbolicName" ) ) {
+                logger.lifecycle( "    >> Found Bundle-SymbolicName" )
+                return true;
+            }
+            if ( hasAttribute( manifest, "Bundle-Name" ) ) {
+                logger.lifecycle( "    >> Found Bundle-Name" )
                 return true;
             }
         }
@@ -198,7 +208,12 @@ class KarafFeaturesGenTask extends DefaultTask {
         return false;
     }
 
-    static def getBundleStartLevel(ResolvedComponentResult dep, KarafFeaturesGenTaskExtension extension) {
+    public static boolean hasAttribute(Manifest manifest, String attributeName) {
+        String value = manifest.mainAttributes.getValue( attributeName )
+        return value != null && !value.trim().isEmpty()
+    }
+
+    def getBundleStartLevel(ResolvedComponentResult dep) {
         String startLevel = null
         extension.startLevels.each { pattern, sl ->
             if("${dep.moduleVersion.group}/${dep.moduleVersion.name}/${dep.moduleVersion.version}".matches(pattern as String)) {
@@ -217,5 +232,15 @@ class KarafFeaturesGenTask extends DefaultTask {
         }
 
         return false
+    }
+
+    KarafFeaturesGenTaskExtension extension_;
+
+    def getExtension() {
+        // Don't keep looking it up...
+        if ( extension_ == null ) {
+            extension_ = project.extensions.findByName( KarafFeaturesGenTaskExtension.NAME ) as KarafFeaturesGenTaskExtension
+        }
+        return extension_;
     }
 }

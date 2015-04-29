@@ -19,17 +19,14 @@ import org.gradle.api.Plugin
 import org.gradle.api.Project
 
 /**
- *
+ * karaf-features-gen plugin
  */
 class KarafFeaturesGenPlugin implements Plugin<Project> {
 
-    /**
-     *
-     * @param project
-     */
+
     @Override
     void apply(Project project) {
-        project.extensions.create("karafFeatures", KarafFeaturesGenTaskExtension)
-        project.task('generateKarafFeatures', type: KarafFeaturesGenTask)
+        project.extensions.create( KarafFeaturesGenTaskExtension.NAME, KarafFeaturesGenTaskExtension, project )
+        project.task( KarafFeaturesGenTask.NAME, type: KarafFeaturesGenTask )
     }
 }

@@ -10,7 +10,7 @@ buildscript {
     }
 
     dependencies {
-        classpath 'com.bmuschko:gradle-nexus-plugin:2.2'
+        classpath 'com.bmuschko:gradle-nexus-plugin:2.3.1'
     }
 }
 
@@ -28,7 +28,7 @@ subprojects {
     group        = 'com.github.lburgazzoli'
 
     ext {
-        gradleVersion    = '2.2.1'
+        gradleVersion    = '2.3'
         gradleScriptDir  = "${rootProject.projectDir}/gradle"
         isReleaseVersion = !version.endsWith("SNAPSHOT")
         gitRoot          = "https://github.com/lburgazzoli"

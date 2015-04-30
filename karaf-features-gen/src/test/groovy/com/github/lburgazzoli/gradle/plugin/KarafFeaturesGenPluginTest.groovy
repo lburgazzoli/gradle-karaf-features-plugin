@@ -26,7 +26,7 @@ class KarafFeaturesGenPluginTest {
     @Test
     public void karafFeatursegenPluginAddsTaskzToProject() {
         Project project = ProjectBuilder.builder().build()
-        project.apply plugin: KarafFeaturesGenTask.NAME
+        project.apply plugin: 'karaf-featuresgen'
 
         assertTrue(project.tasks.generateKarafFeatures instanceof KarafFeaturesGenTask)
     }

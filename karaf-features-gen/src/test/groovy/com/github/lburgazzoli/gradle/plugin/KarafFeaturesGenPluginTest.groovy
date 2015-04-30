@@ -22,9 +22,6 @@ import org.junit.Test
 
 import static org.junit.Assert.assertTrue
 
-/**
- *
- */
 class KarafFeaturesGenPluginTest {
     @Test
     public void karafFeatursegenPluginAddsTaskzToProject() {

@@ -1,7 +1,7 @@
 language: java
 script:
-- '[ "${TRAVIS_PULL_REQUEST}" = "false" ] && ./gradlew test uploadArchives || false'
-- '[ "${TRAVIS_PULL_REQUEST}" = "true" ] && ./gradlew test || false'
+- '[ "${TRAVIS_PULL_REQUEST}" = "false" ] && ./gradlew test uploadArchives || true'
+- '[ "${TRAVIS_PULL_REQUEST}" = "true" ] && ./gradlew test || true'
 jdk:
 - oraclejdk7
 env:

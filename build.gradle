@@ -24,6 +24,11 @@ subprojects {
     apply plugin: 'maven'
     apply plugin: 'com.bmuschko.nexus'
 
+    // Added this (and publication def) to be able to publish to "maven local" for
+    // testing, since I do not have rights to publish to your snapshot server
+    //      - Sincerely, Steve :)
+    apply plugin: "maven-publish"
+
     version      = '1.0.0.SNAPSHOT'
     group        = 'com.github.lburgazzoli'
 
@@ -101,6 +106,14 @@ subprojects {
                 url                 = "${project.gitProject}"
                 connection          = "scm:git:${project.gitProject}.git"
                 developerConnection = "scm:git:${project.gitProject}.git"
+            }
+        }
+    }
+
+    publishing {
+        publications {
+            mavenJava(MavenPublication) {
+                from components.java
             }
         }
     }

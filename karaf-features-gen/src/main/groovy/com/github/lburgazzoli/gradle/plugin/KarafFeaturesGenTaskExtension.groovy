@@ -1,5 +1,5 @@
 /**
- * Copyright 2013 lb
+ * Copyright 2013, contributors as indicated by the @author tags
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,28 +15,38 @@
  */
 package com.github.lburgazzoli.gradle.plugin
 
+import org.gradle.api.NamedDomainObjectContainer
 import org.gradle.api.Project
 
 /**
  * Extensions for KarafFeaturesGenTask
+ *
+ * @author Luca Burgazzoli
+ * @author Steve Ebersole
  */
 class KarafFeaturesGenTaskExtension {
-    public static final String NAME = 'karafFeatures'
+    private final Project project
 
-    String[] excludes = [];
-    String[] wraps = [];
-    Map<String,String> startLevels = [:];
-    File outputFile = null;
-    List<String> extraBundles = [];
-    Set<Project> projects;
+    def File outputDir
+    def String featuresXmlFileName
+
+    final NamedDomainObjectContainer<FeatureDescriptor> features;
 
     KarafFeaturesGenTaskExtension(Project project) {
-        // set up the defaults for projects array to maintain backwards compatibility...
-        if ( project.subprojects.size() > 0 ) {
-            projects = project.subprojects;
-        }
-        else {
-            projects = [project];
-        }
+        this.project = project
+
+        this.outputDir = project.file( "${project.buildDir}/karafFeatures/" )
+        this.featuresXmlFileName = "${project.name}-${project.version}-karaf.xml"
+
+        // Create a dynamic container for FeatureDescriptor definitions by the user
+        features = project.container( FeatureDescriptor, new FeatureDescriptorFactory( project ) )
+    }
+
+    def features(Closure closure) {
+        features.configure( closure )
+    }
+
+    File getFeaturesXmlFile() {
+        new File( outputDir, featuresXmlFileName )
     }
 }

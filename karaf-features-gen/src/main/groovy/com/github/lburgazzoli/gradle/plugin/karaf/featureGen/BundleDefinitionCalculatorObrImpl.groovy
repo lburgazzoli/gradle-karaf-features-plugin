@@ -96,7 +96,7 @@ class BundleDefinitionCalculatorObrImpl implements BundleDefinitionCalculator {
 	}
 
 	static BundleInstructionDescriptor findBundleInstructions(ModuleVersionIdentifier dep, FeatureDescriptor feature) {
-		feature.bundles.each {
+		for ( BundleInstructionDescriptor it : feature.bundles ) {
 			if ( it.matcher.matches( dep ) ) {
 				return it;
 			}

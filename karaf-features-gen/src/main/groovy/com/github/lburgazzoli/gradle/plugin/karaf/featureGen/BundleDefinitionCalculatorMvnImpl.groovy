@@ -147,7 +147,7 @@ public class BundleDefinitionCalculatorMvnImpl implements BundleDefinitionCalcul
 	}
 
 	static BundleInstructionDescriptor findBundleInstructions(ResolvedComponentResult dep, FeatureDescriptor feature) {
-		feature.bundles.each {
+		for ( BundleInstructionDescriptor it : feature.bundles ) {
 			if ( it.matcher.matches( dep ) ) {
 				return it;
 			}

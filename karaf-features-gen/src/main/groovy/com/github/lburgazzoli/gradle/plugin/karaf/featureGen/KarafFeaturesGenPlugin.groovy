@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.github.lburgazzoli.gradle.plugin
+package com.github.lburgazzoli.gradle.plugin.karaf.featureGen
 
 import org.gradle.api.Plugin
 import org.gradle.api.Project
@@ -21,7 +21,8 @@ import org.gradle.api.Task
 import org.gradle.api.artifacts.Configuration
 
 /**
- * Plugin for integrating Karaf features generation into a build.
+ * Plugin for integrating Karaf features generation into a build.  Execution is configured
+ * through the KarafFeaturesGenTaskExtension DSL extension registered under {@code karafFeatures}
  *
  * @author Luca Burgazzoli
  * @author Steve Ebersole
@@ -54,7 +55,7 @@ class KarafFeaturesGenPlugin implements Plugin<Project> {
             task.inputs.files( configuration )
 
             extension.features.each { feature ->
-                feature.extraBundleDependencies.each {
+                feature.bundleDependencies.each {
                     task.inputs.files( it )
                     task.dependsOn( it )
                 }

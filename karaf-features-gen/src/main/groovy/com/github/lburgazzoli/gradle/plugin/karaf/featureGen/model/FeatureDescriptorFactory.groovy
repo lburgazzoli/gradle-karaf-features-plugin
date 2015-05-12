@@ -13,32 +13,27 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.github.lburgazzoli.gradle.plugin
+package com.github.lburgazzoli.gradle.plugin.karaf.featureGen.model
 
-import org.gradle.util.ConfigureUtil
+import org.gradle.api.NamedDomainObjectFactory
+import org.gradle.api.Project
+
+import com.github.lburgazzoli.gradle.plugin.karaf.featureGen.KarafFeaturesGenTaskExtension
 
 /**
- * Models the information used to in generating a single {@code <bundle/>} entry
- * in a Karaf features repository file
- *
  * @author Steve Ebersole
  */
-class BundleInstructionsDescriptor {
-	def String selector
-	def boolean include = true;
-	def String startLevel;
+class FeatureDescriptorFactory implements NamedDomainObjectFactory<FeatureDescriptor>  {
+	private final Project project;
+	private final KarafFeaturesGenTaskExtension extension
 
-	private BundleWrapInstructionsDescriptor wrap;
-
-	def wrap(Closure closure) {
-		if ( wrap == null ) {
-			wrap = new BundleWrapInstructionsDescriptor()
-			wrap.requested = true
-		}
-		ConfigureUtil.configure( closure, wrap )
+	FeatureDescriptorFactory(Project project, KarafFeaturesGenTaskExtension extension) {
+		this.extension = extension
+		this.project = project
 	}
 
-	BundleWrapInstructionsDescriptor getWrap() {
-		return wrap;
+	@Override
+	FeatureDescriptor create(String name) {
+		return new FeatureDescriptor( name, project, extension )
 	}
 }

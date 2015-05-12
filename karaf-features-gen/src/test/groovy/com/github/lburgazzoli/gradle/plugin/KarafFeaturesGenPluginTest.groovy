@@ -18,6 +18,8 @@ package com.github.lburgazzoli.gradle.plugin
 
 import org.gradle.api.Project
 import org.gradle.testfixtures.ProjectBuilder
+
+import com.github.lburgazzoli.gradle.plugin.karaf.featureGen.KarafFeaturesGenTask
 import org.junit.Test
 
 import static org.junit.Assert.assertTrue

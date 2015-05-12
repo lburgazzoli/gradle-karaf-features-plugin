@@ -13,23 +13,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.github.lburgazzoli.gradle.plugin
-
-import org.gradle.api.NamedDomainObjectFactory
-import org.gradle.api.Project
+package com.github.lburgazzoli.gradle.plugin.karaf.featureGen.model
 
 /**
+ * Models the information used to in the {@code wrap:} url protocol for a {@code <bundle/>} entry
+ * in a Karaf features repository file
+ *
  * @author Steve Ebersole
  */
-class FeatureDescriptorFactory implements NamedDomainObjectFactory<FeatureDescriptor>  {
-	private final Project project;
+class BundleWrapInstructionsDescriptor {
+	/**
+	 * Any additional instructions to apply to the wrap url
+	 */
+	def Map<String,String> instructions
 
-	FeatureDescriptorFactory(Project project) {
-		this.project = project
+	public void instruction(String key, String value) {
+		if ( instructions == null ) {
+			instructions = new HashMap<String,String>()
+		}
+		instructions.put( key, value )
 	}
 
-	@Override
-	FeatureDescriptor create(String name) {
-		return new FeatureDescriptor( name, project )
-	}
 }

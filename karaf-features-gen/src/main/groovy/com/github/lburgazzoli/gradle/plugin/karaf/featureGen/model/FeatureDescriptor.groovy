@@ -13,16 +13,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.github.lburgazzoli.gradle.plugin
+package com.github.lburgazzoli.gradle.plugin.karaf.featureGen.model
 
 import org.gradle.api.Project
 import org.gradle.api.artifacts.Configuration
 import org.gradle.util.ConfigureUtil
 
-import org.apache.commons.collections.ClosureUtils
+import com.github.lburgazzoli.gradle.plugin.karaf.featureGen.KarafFeaturesGenTaskExtension
 
 /**
- * Models the information used to generate a single {@code <feature/>} entry
+ * DSL extension allowing instruction on how to produce a {@code <feature/>} entry
  * in a Karaf features repository file
  *
  * @author Steve Ebersole
@@ -39,27 +39,38 @@ class FeatureDescriptor {
 	def String version
 
 	/**
+	 * Optional description for the feature
+	 */
+	def String description
+
+	/**
 	 * Any projects to be included in this feature.  We will pick up
 	 * all of their {@code configurations.runtime} dependencies and
-	 * add them as bundles.
+	 * add them as bundles.  These project runtime configurations are
+	 * considered additive to the {@link #bundleDependencies} configurations
 	 */
 	def Project[] projects
 
 	/**
-	 * Any Configurations containing additional dependencies to apply as bundles
-	 * to this feature.
+	 * Any Configurations containing dependencies to apply as bundles
+	 * to this feature.  These configurations are considered additive to the
+	 * project runtime configurations from {@link #projects}
 	 */
-	def Configuration[] extraBundleDependencies
+	def Configuration[] bundleDependencies
 
 	/**
 	 * Any specific bundle instructions to apply within this feature.
 	 */
-	def BundleInstructionsDescriptor[] bundles
+	def BundleInstructionDescriptor[] bundles
 
-	FeatureDescriptor(String name, Project project) {
+	def String[] dependencyFeatureNames = []
+
+	private final KarafFeaturesGenTaskExtension extension
+
+	FeatureDescriptor(String name, Project project, KarafFeaturesGenTaskExtension extension) {
+		this.extension = extension
 		this.name = name
 		this.version = project.version
-		this.projects = [project]
 	}
 
 	def project(Project project) {
@@ -71,21 +82,8 @@ class FeatureDescriptor {
 		}
 	}
 
-	def bundle(String selector, Closure closure) {
-		BundleInstructionsDescriptor descriptor = new BundleInstructionsDescriptor();
-		descriptor.selector = selector;
-		ConfigureUtil.configure( closure, descriptor )
-
-		if ( bundles == null ) {
-			bundles = [descriptor]
-		}
-		else {
-			bundles += descriptor
-		}
-	}
-
 	def bundle(Closure closure) {
-		BundleInstructionsDescriptor descriptor = new BundleInstructionsDescriptor();
+		BundleInstructionDescriptor descriptor = new BundleInstructionDescriptor();
 		ConfigureUtil.configure( closure, descriptor )
 
 		if ( bundles == null ) {

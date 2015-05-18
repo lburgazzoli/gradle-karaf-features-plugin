@@ -1,7 +1,7 @@
 language: java
 script:
-- '[ "${TRAVIS_PULL_REQUEST}" = "false" ] && ./gradlew :lb-karaf-featuresgen:uploadArchives || true'
-- '[ "${TRAVIS_PULL_REQUEST}" = "true" ] && ./gradlew :lb-karaf-featuresgen:test || true'
+- '[ "${TRAVIS_PULL_REQUEST}" = "false" ] && ./gradlew :lb-karaf-features-gen:uploadArchives || true'
+- '[ "${TRAVIS_PULL_REQUEST}" = "true" ] && ./gradlew :lb-karaf-features-gen:test || true'
 jdk:
 - oraclejdk7
 env:

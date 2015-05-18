@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2013, contributors as indicated by the @author tags
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -17,8 +17,6 @@ package com.github.lburgazzoli.gradle.plugin.karaf.featureGen
 
 import org.gradle.api.DefaultTask
 import org.gradle.api.artifacts.Configuration
-import org.gradle.api.artifacts.ModuleVersionIdentifier
-import org.gradle.api.artifacts.result.ResolvedComponentResult
 import org.gradle.api.tasks.TaskAction
 
 import groovy.xml.MarkupBuilder

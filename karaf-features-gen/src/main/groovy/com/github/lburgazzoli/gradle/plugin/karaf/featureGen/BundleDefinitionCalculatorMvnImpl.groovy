@@ -15,6 +15,8 @@
  */
 package com.github.lburgazzoli.gradle.plugin.karaf.featureGen
 
+import org.slf4j.LoggerFactory
+
 import java.util.jar.JarFile
 import java.util.jar.Manifest
 
@@ -126,8 +128,9 @@ public class BundleDefinitionCalculatorMvnImpl implements BundleDefinitionCalcul
 			ResolvedComponentResult resolvedComponentResult,
 			KarafFeaturesGenTaskExtension extension,
 			boolean includeResolvedComponentResult) {
+
 		final BundleInstructionDescriptor bundleInstructions = findBundleInstructions( resolvedComponentResult, feature )
-		if ( bundleInstructions != null && !bundleInstructions.include ) {
+        if ( bundleInstructions != null && !bundleInstructions.include ) {
 			return;
 		}
 

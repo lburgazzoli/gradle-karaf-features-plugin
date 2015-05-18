@@ -21,6 +21,7 @@ import org.gradle.api.internal.artifacts.DefaultModuleVersionIdentifier
 
 /**
  * @author Steve Ebersole
+ * @author Luca Burgazzoli
  */
 public class Matcher {
 	def String group
@@ -32,7 +33,10 @@ public class Matcher {
 	}
 
 	public boolean matches(ModuleVersionIdentifier check) {
-		return check.group.equals( group ) && check.name.equals( module ) && ( version == null || check.version.equals( version ) )
+		return ( check.group.equals( group )
+            && ( module == null || check.name.equals( module ) )
+            && ( version == null || check.version.equals( version ) )
+        )
 	}
 
 	public ModuleVersionIdentifier asModuleVersionIdentifier() {

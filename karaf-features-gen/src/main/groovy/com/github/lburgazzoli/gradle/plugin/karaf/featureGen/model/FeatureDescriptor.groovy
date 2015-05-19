@@ -26,6 +26,7 @@ import com.github.lburgazzoli.gradle.plugin.karaf.featureGen.KarafFeaturesGenTas
  * in a Karaf features repository file
  *
  * @author Steve Ebersole
+ * @author Luca Burgazzoli
  */
 class FeatureDescriptor {
 	/**
@@ -42,6 +43,11 @@ class FeatureDescriptor {
 	 * Optional description for the feature
 	 */
 	def String description
+
+    /**
+     * The project from which the plugin is instantiated
+     */
+    def Project project
 
 	/**
 	 * Any projects to be included in this feature.  We will pick up
@@ -71,13 +77,13 @@ class FeatureDescriptor {
 		this.extension = extension
 		this.name = name
 		this.version = project.version
+		this.project = project
 	}
 
 	def project(Project project) {
 		if ( this.projects == null ) {
-			this.projects = [project]
-		}
-		else {
+			this.projects = [ project ]
+		} else {
 			this.projects += project
 		}
 	}
@@ -87,10 +93,13 @@ class FeatureDescriptor {
 		ConfigureUtil.configure( closure, descriptor )
 
 		if ( bundles == null ) {
-			bundles = [descriptor]
-		}
-		else {
+			bundles = [ descriptor ]
+		} else {
 			bundles += descriptor
 		}
 	}
+
+    public Project[] getProjects() {
+        return this.projects != null ? this.projects : [ this.project ]
+    }
 }

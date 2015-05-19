@@ -1,7 +1,0 @@
-rootProject.name = 'lb-gradle-plugins'
-
-include "karaf-features-gen"
-
-rootProject.children.each { 
-    it.name = "lb-" + it.name 
-}

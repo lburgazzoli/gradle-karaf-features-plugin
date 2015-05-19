@@ -20,119 +20,120 @@ buildscript {
 //
 // *****************************************************************************
 
-subprojects {
-    apply plugin: 'java'
-    apply plugin: 'groovy'
-    apply plugin: 'maven'
-    apply plugin: 'com.bmuschko.nexus'
-    //apply plugin: 'io.codearte.nexus-staging'
+apply plugin: 'java'
+apply plugin: 'groovy'
+apply plugin: 'maven'
+apply plugin: 'com.bmuschko.nexus'
+apply plugin: 'io.codearte.nexus-staging'
 
-    // Added this (and publication def) to be able to publish to "maven local"
-    // and the jboss snapshot repo for testing, since I do not have rights to
-    // publish to your snapshot server
-    //      - Sincerely, Steve :)
-    apply plugin: "maven-publish"
-    apply plugin: 'maven-publish-auth'
+// Added this (and publication def) to be able to publish to "maven local"
+// and the jboss snapshot repo for testing, since I do not have rights to
+// publish to your snapshot server
+//      - Sincerely, Steve :)
+apply plugin: "maven-publish"
+apply plugin: 'maven-publish-auth'
 
-    version      = '1.0.1-SNAPSHOT'
-    group        = 'com.github.lburgazzoli'
+sourceCompatibility = 1.6
+targetCompatibility = 1.6
+version             = '2.0.0-SNAPSHOT'
+group               = 'com.github.lburgazzoli'
 
-    ext {
-        gradleVersion    = '2.3'
-        gradleScriptDir  = "${rootProject.projectDir}/gradle"
-        isReleaseVersion = !version.endsWith("SNAPSHOT")
-        gitRoot          = "https://github.com/lburgazzoli"
-        gitProject       = "https://github.com/lburgazzoli/lb-gradle-plugins"
+ext {
+    gradleVersion    = '2.3'
+    gradleScriptDir  = "${rootProject.projectDir}/gradle"
+    isReleaseVersion = !version.endsWith("SNAPSHOT")
+    gitRoot          = "https://github.com/lburgazzoli"
+    gitProject       = "https://github.com/lburgazzoli/lb-gradle-plugins"
 
-        if (project.hasProperty('sonatypeUsername') && project.hasProperty('sonatypePassword')) {
-            nexusUsername = sonatypeUsername
-            nexusPassword = sonatypePassword
-        } else if(!project.hasProperty('nexusUsername') && !project.hasProperty('nexusPassword')) {
-            nexusUsername = "$System.env.CI_DEPLOY_USERNAME"
-            nexusPassword = "$System.env.CI_DEPLOY_PASSWORD"
-        }
-
-        versions = [
-            spock : '1.0-groovy-2.3'
-        ]
+    if (project.hasProperty('sonatypeUsername') && project.hasProperty('sonatypePassword')) {
+        nexusUsername = sonatypeUsername
+        nexusPassword = sonatypePassword
+    } else if(!project.hasProperty('nexusUsername') && !project.hasProperty('nexusPassword')) {
+        nexusUsername = "$System.env.CI_DEPLOY_USERNAME"
+        nexusPassword = "$System.env.CI_DEPLOY_PASSWORD"
     }
 
-    repositories {
-        mavenCentral()    
-        mavenLocal()
-        jcenter()
+    versions = [
+        spock : '1.0-groovy-2.3'
+    ]
+}
+
+repositories {
+    mavenCentral()    
+    mavenLocal()
+    jcenter()
+}
+
+dependencies {
+    compile gradleApi()
+    compile localGroovy()
+
+    testCompile("org.spockframework:spock-core:$versions.spock") {
+        exclude(module: 'groovy-all')
     }
+}
 
-    dependencies {
-        compile gradleApi()
-        compile localGroovy()
+jar {
+    baseName = "${project.name}"
 
-        testCompile("org.spockframework:spock-core:$versions.spock") {
-            exclude(module: 'groovy-all')
-        }
+    manifest {
+        attributes['Implementation-Title'   ] = "${group}.${project.name}-${project.version}"
+        attributes['Implementation-Version' ] = project.version
+        attributes['Implementation-Vendor'  ] = 'lb'
     }
+}
 
-    jar {
-        baseName = "${project.name}"
+// *****************************************************************************
+//
+// *****************************************************************************
 
-        manifest {
-            attributes['Implementation-Title'   ] = "${group}.${project.name}-${project.version}"
-            attributes['Implementation-Version' ] = project.version
-            attributes['Implementation-Vendor'  ] = 'lb'
-        }
-    }
+nexus {
+    sign    = false
+}
 
-    // *************************************************************************
-    //
-    // *************************************************************************
-    
-    nexus {
-        sign    = false
-    }
+extraArchive {
+    javadoc = true
+    sources = true
+    tests   = false
+}
 
-    extraArchive {
-        javadoc = true
-        sources = true
-        tests   = false
-    }
+modifyPom {
+    project {
+        name          = "${project.name}"
+        description   = "${project.name}"
+        url           = "${project.gitProject}"
+        packaging     = 'jar'
 
-    modifyPom {
-        project {
-            name          = "${project.name}"
-            description   = "${project.name}"
-            url           = "${project.gitProject}"
-            packaging     = 'jar'
-
-            licenses {
-                license {
-                    name         = "The Apache Software License, Version 2.0"
-                    url          = "http://www.apache.org/licenses/LICENSE-2.0.txt"
-                    distribution = "repo"
-                }
-            }
-
-            scm {
-                url                 = "${project.gitProject}"
-                connection          = "scm:git:${project.gitProject}.git"
-                developerConnection = "scm:git:${project.gitProject}.git"
+        licenses {
+            license {
+                name         = "The Apache Software License, Version 2.0"
+                url          = "http://www.apache.org/licenses/LICENSE-2.0.txt"
+                distribution = "repo"
             }
         }
-    }
 
-    publishing {
-        publications {
-            mavenJava(MavenPublication) {
-                from components.java
-            }
-        }
-        repositories {
-            maven {
-                name 'jboss-snapshots-repository'
-                url 'https://repository.jboss.org/nexus/content/repositories/snapshots'
-            }
+        scm {
+            url                 = "${project.gitProject}"
+            connection          = "scm:git:${project.gitProject}.git"
+            developerConnection = "scm:git:${project.gitProject}.git"
         }
     }
 }
+
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            from components.java
+        }
+    }
+    repositories {
+        maven {
+            name 'jboss-snapshots-repository'
+            url 'https://repository.jboss.org/nexus/content/repositories/snapshots'
+        }
+    }
+}
+
 
 // *****************************************************************************
 //

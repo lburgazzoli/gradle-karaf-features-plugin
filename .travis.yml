@@ -1,9 +1,9 @@
 language: java
 script:
-- 'if [ "${TRAVIS_PULL_REQUEST}" = "false" ]; then ./gradlew :lb-karaf-features-gen:uploadArchives; else ./gradlew :lb-karaf-features-gen:test; fi'
+- if [ "${TRAVIS_PULL_REQUEST}" = "false" ]; then ./gradlew uploadArchives; else ./gradlew test; fi
 jdk:
 - oraclejdk7
 env:
   global:
-  - secure: b+VqxVmQeTRkYvADg1DnmQAF5YZY/Ys2OWGMGNB/kegl/r4kHD9pUPHXwuBd/pSUBB67DbTPjQ2nSDZVHRPXWAbccg9VruRYEfIE8DxX+2XiTfCevP0xvtxBVnQv8mXpkfw1V7KjXSPT+ELO5rZceo5Ci5/cQe0A4WBIOERXtzA=
-  - secure: iWzzLqeUdj8A+1E7gVcM3SlByRfHu1zON8wIl0TxWnFyBzP8ijfU7eOHVI7cGCOy80fPGp6OiVlkLGvq9fE77GTMW3m1TlV8EjLPXblo6w1rLlojK9dPSWAZoFyrT0Q8+tBFf8C3GdLPOqY5gKfUt/ZYb5L/luZhr3GUzXHU2VE=
+  - secure: FIV83gG41ENnn0DFYaM/c/2wa/gFCLYSY3o+UnuCPsGqHuApdQkFOHjsrPLJMjfGLJqTJuWt2sG2DwAiWZwHU1DvbgTQNVMhwc3gBlQj2fPI/bmJwEBKPrMTcxbih4hl6fRoVEzp2ZHINbY40WfZK+087edGLapas2KA41YwW1o=
+  - secure: WQ9cyFXtLFuFASW5K/TuwXeHeDZPYdOYdZniHJqEBzhMKodfH5a/knOjlU0NuKjL2aqcmznnNQGAsiCBTfKrdnXQhOxz8ce8BxGEVHQMODpFbZ5xpEA0oboL06ixEUGieZ1OC67JxPMTmbinGnwMKyPs04WXKKHhtOIvy7GSDrY=

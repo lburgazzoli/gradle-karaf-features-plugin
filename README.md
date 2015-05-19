@@ -1,2 +1,2 @@
-lb-gradle-plugins
-=================
+gradle-karaf-features-plugin
+============================

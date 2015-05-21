@@ -28,6 +28,7 @@ import org.gradle.api.artifacts.Configuration
  * @author Steve Ebersole
  */
 class KarafFeaturesPlugin implements Plugin<Project> {
+    public static final String PLUGIN_ID = 'com.github.lburgazzoli.karaf.features'
     public static final String CONFIGURATION_NAME = 'karafFeaturesBundles'
     public static final String EXTENSION_NAME = 'karafFeatures'
     public static final String TASK_NAME = 'generateKarafFeatures'

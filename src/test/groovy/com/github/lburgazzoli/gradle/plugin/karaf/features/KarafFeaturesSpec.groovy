@@ -20,33 +20,61 @@ import spock.lang.Specification
 
 class KarafFeaturesSpec extends Specification {
 
-    def 'Single project'() {
+    def 'Apply plugin'() {
         given:
-            def project = singleProject()
+            def project = ProjectBuilder.builder().build()
         when:
-            def value = true
+            setupProject(project)
         then:
-            value
+            project.extensions.karafFeatures instanceof KarafFeaturesTaskExtension
+            project.tasks.generateKarafFeatures instanceof KarafFeaturesTask
     }
 
-    def singleProject() {
-        def project = new ProjectBuilder().withName('single').build()
-        /*
+    def 'Simple project'() {
+        given:
+            def project = ProjectBuilder.builder().build()
+        when:
+            setupProject(project)
+            setupProjectDependencies(project)
+
+            project.extensions.karafFeatures.features {
+                myFeature {
+                    name = 'karaf-features-simple-project'
+                    bundle {
+                        matcher group: 'com.squareup.retrofit', name: 'converter-jackson'
+                        include: false
+                    }
+                }
+            }
+
+            def featuresStr = project.tasks.generateKarafFeatures.generateFeatures()
+            def featuresXml = new XmlSlurper().parseText(featuresStr)
+        then:
+            featuresXml != null
+    }
+
+    // *************************************************************************
+    //
+    // *************************************************************************
+
+    def setupProject(project) {
+        project.apply plugin: KarafFeaturesPlugin.PLUGIN_ID
+        project.apply plugin: 'java'
+        project.apply plugin: 'maven'
+
+        project.repositories {
+            mavenLocal()
+            mavenCentral()
+        }
+
+        return project
+    }
+
+    def setupProjectDependencies(project) {
         project.dependencies {
-            compile("org.slf4j:slf4j-api:1.7.12") { transitive = false }
-            compile("org.slf4j:slf4j-ext:1.7.12") { transitive = false }
-
-            compile "org.apache.logging.log4j:log4j-api:2.3"
-            compile "org.apache.logging.log4j:log4j-core:2.3"
-            compile "org.apache.logging.log4j:log4j-jcl:2.3"
-            compile "org.apache.logging.log4j:log4j-jul:2.3"
-            compile "org.apache.logging.log4j:log4j-slf4j-impl:2.3"
-
-            compile "com.google.guava:guava:18.0"
-
+            compile 'com.google.guava:guava:18.0'
             compile "com.squareup.retrofit:retrofit:1.9.0"
             compile "com.squareup.retrofit:converter-jackson:1.9.0"
         }
-        */
     }
 }

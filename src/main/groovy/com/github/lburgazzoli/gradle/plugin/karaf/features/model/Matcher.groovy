@@ -25,7 +25,7 @@ import org.gradle.api.internal.artifacts.DefaultModuleVersionIdentifier
  */
 public class Matcher {
 	def String group
-	def String module
+	def String name
 	def String version
 
 	public boolean matches(ResolvedComponentResult check) {
@@ -34,12 +34,12 @@ public class Matcher {
 
 	public boolean matches(ModuleVersionIdentifier check) {
 		return ( check.group.equals( group )
-            && ( module == null || check.name.equals( module ) )
+            && ( name == null || check.name.equals( name ) )
             && ( version == null || check.version.equals( version ) )
         )
 	}
 
 	public ModuleVersionIdentifier asModuleVersionIdentifier() {
-		return new DefaultModuleVersionIdentifier( group, module, version )
+		return new DefaultModuleVersionIdentifier( group, name, version )
 	}
 }

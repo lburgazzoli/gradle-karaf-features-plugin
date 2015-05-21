@@ -28,16 +28,27 @@ import groovy.xml.MarkupBuilder
  * @author Steve Ebersole
  */
 class KarafFeaturesTask extends DefaultTask {
+    public static final String FEATURES_XMLNS = 'http://karaf.apache.org/xmlns/features/v1.2.0'
+
     public KarafFeaturesTask() {
         super();
     }
 
     @TaskAction
     def generateFeaturesFile() {
+        // write out a features repository xml.
+        extension.featuresXmlFile.parentFile.mkdirs()
+
+        def out = new BufferedWriter( new FileWriter( extension.featuresXmlFile ) )
+        out.write(generateFeatures())
+        out.close()
+    }
+
+    def generateFeatures() {
         def writer = new StringWriter()
         def builder = new MarkupBuilder(writer)
 
-        builder.features(xmlns:'http://karaf.apache.org/xmlns/features/v1.2.0', name: extension.featuresName) {
+        builder.features(xmlns:FEATURES_XMLNS, name: extension.featuresName) {
             extension.repositories.each {
                 builder.repository( it )
             }
@@ -82,11 +93,7 @@ class KarafFeaturesTask extends DefaultTask {
             }
         }
 
-        // write out a features repository xml.
-        extension.featuresXmlFile.parentFile.mkdirs()
-        def out = new BufferedWriter( new FileWriter( extension.featuresXmlFile ) )
-        out.write( writer.toString() )
-        out.close()
+        return writer.toString()
     }
 
     KarafFeaturesTaskExtension extension_;

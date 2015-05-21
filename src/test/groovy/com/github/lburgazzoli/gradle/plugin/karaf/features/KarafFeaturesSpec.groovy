@@ -18,6 +18,9 @@ package com.github.lburgazzoli.gradle.plugin.karaf.features
 import org.gradle.testfixtures.ProjectBuilder
 import spock.lang.Specification
 
+/**
+ * @author Luca Burgazzoli
+ */
 class KarafFeaturesSpec extends Specification {
 
     def 'Apply plugin'() {

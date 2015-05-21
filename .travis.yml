@@ -1,6 +1,6 @@
 language: java
 script:
-- if [ "${TRAVIS_PULL_REQUEST}" = "false" ]; then ./gradlew uploadArchives; else ./gradlew test; fi
+- if [ "${TRAVIS_PULL_REQUEST}" = "false" ]; then ./gradlew test uploadArchives; else ./gradlew test; fi
 jdk:
 - oraclejdk7
 env:

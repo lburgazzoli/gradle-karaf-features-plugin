@@ -78,7 +78,7 @@ class KarafFeaturesSpec extends Specification {
 
     def setupProject(project) {
         project.apply plugin: KarafFeaturesPlugin.PLUGIN_ID
-        project.apply plugin: 'java'
+        //project.apply plugin: 'java'
         project.apply plugin: 'maven'
 
         project.repositories {

@@ -40,28 +40,19 @@ class KarafFeaturesSpec extends Specification {
             def task = getKarafFeaturesTasks(project)
         when:
             def feature = features.create('myFeature')
-            //feature.name = 'karaf-features-simple-project'
-            //feature.bundle {
-            //}
-
-            /*
-            project.extensions.karafFeatures.features {
-
-                myFeature {
-                    name = 'karaf-features-simple-project'
-                    bundle {
-                        matcher group: 'com.squareup.retrofit', name: 'converter-jackson'
-                        include: false
-                    }
-                }
+            feature.name = 'karaf-features-simple-project'
+            feature.bundle {
+                match: [ group: 'com.squareup.retrofit', name: 'converter-jackson' ]
+                include: false
             }
-            */
 
             def featuresStr = task.generateFeatures()
             def featuresXml = new XmlSlurper().parseText(featuresStr)
         then:
             featuresStr != null
             featuresXml != null
+
+            featuresXml.feature.@name == 'karaf-features-simple-project'
     }
 
     // *************************************************************************
@@ -71,14 +62,14 @@ class KarafFeaturesSpec extends Specification {
     def setupProjectAndDependencies() {
         def project = ProjectBuilder.builder().build()
         setupProject(project)
-        //setupProjectDependencies(project)
+        setupProjectDependencies(project)
 
         return project
     }
 
     def setupProject(project) {
         project.apply plugin: KarafFeaturesPlugin.PLUGIN_ID
-        //project.apply plugin: 'java'
+        project.apply plugin: 'java'
         project.apply plugin: 'maven'
 
         project.repositories {

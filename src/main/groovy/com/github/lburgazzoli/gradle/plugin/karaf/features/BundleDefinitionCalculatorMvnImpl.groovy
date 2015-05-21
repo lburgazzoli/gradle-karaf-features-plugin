@@ -80,8 +80,7 @@ public class BundleDefinitionCalculatorMvnImpl implements BundleDefinitionCalcul
 			final String url;
 			if ( bundleDescriptor != null && bundleDescriptor.remap != null ) {
 				url = baseMvnUrl( bundleDescriptor.remap.asModuleVersionIdentifier() )
-			}
-			else {
+			} else {
 				url = renderUrl( dep.moduleVersion, bundleDescriptor, resolvedBundleArtifact )
 			}
 
@@ -143,7 +142,9 @@ public class BundleDefinitionCalculatorMvnImpl implements BundleDefinitionCalcul
 
 		// then add this one (if param says to)
 		if ( includeResolvedComponentResult ) {
-			orderedDependencyMap.put( resolvedComponentResult.moduleVersion, resolvedComponentResult )
+            if(resolvedComponentResult.moduleVersion.group) {
+                orderedDependencyMap.put(resolvedComponentResult.moduleVersion, resolvedComponentResult)
+            }
 		}
 	}
 

@@ -39,7 +39,7 @@ version             = '2.0.0-SNAPSHOT'
 group               = 'com.github.lburgazzoli'
 
 ext {
-    gradleVersion    = '2.3'
+    gradleVersion    = '2.4'
     gradleScriptDir  = "${rootProject.projectDir}/gradle"
     isReleaseVersion = !version.endsWith("SNAPSHOT")
     gitRoot          = "https://github.com/lburgazzoli"

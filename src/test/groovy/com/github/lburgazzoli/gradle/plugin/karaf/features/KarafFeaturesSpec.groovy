@@ -15,7 +15,6 @@
  */
 package com.github.lburgazzoli.gradle.plugin.karaf.features
 
-import com.github.lburgazzoli.gradle.plugin.karaf.features.model.FeatureDescriptor
 import org.gradle.testfixtures.ProjectBuilder
 import spock.lang.Specification
 
@@ -30,17 +29,18 @@ class KarafFeaturesSpec extends Specification {
         when:
             setupProject(project)
         then:
-            project.extensions.karafFeatures instanceof KarafFeaturesTaskExtension
-            project.tasks.generateKarafFeatures instanceof KarafFeaturesTask
+            getKarafFeaturesExtension(project) instanceof KarafFeaturesTaskExtension
+            getKarafFeaturesTasks(project) instanceof KarafFeaturesTask
     }
 
     def 'Simple project'() {
         given:
             def project = setupProjectAndDependencies()
-            def features = project.extensions.karafFeatures.features
+            def features = getKarafFeaturesExtension(project).features
+            def task = getKarafFeaturesTasks(project)
         when:
             def feature = features.create('myFeature')
-            feature.name = 'karaf-features-simple-project'
+            //feature.name = 'karaf-features-simple-project'
             //feature.bundle {
             //}
 
@@ -57,9 +57,10 @@ class KarafFeaturesSpec extends Specification {
             }
             */
 
-            def featuresStr = project.tasks.generateKarafFeatures.generateFeatures()
+            def featuresStr = task.generateFeatures()
             def featuresXml = new XmlSlurper().parseText(featuresStr)
         then:
+            featuresStr != null
             featuresXml != null
     }
 
@@ -70,7 +71,7 @@ class KarafFeaturesSpec extends Specification {
     def setupProjectAndDependencies() {
         def project = ProjectBuilder.builder().build()
         setupProject(project)
-        setupProjectDependencies(project)
+        //setupProjectDependencies(project)
 
         return project
     }
@@ -94,5 +95,13 @@ class KarafFeaturesSpec extends Specification {
             compile "com.squareup.retrofit:retrofit:1.9.0"
             compile "com.squareup.retrofit:converter-jackson:1.9.0"
         }
+    }
+
+    def getKarafFeaturesExtension(project) {
+        project.extensions.getByName(KarafFeaturesPlugin.EXTENSION_NAME)
+    }
+
+    def getKarafFeaturesTasks(project) {
+        project.tasks.getByName(KarafFeaturesPlugin.TASK_NAME)
     }
 }

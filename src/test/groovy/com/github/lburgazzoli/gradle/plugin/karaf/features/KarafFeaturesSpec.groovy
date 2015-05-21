@@ -40,7 +40,9 @@ class KarafFeaturesSpec extends Specification {
             setupProject(project)
             setupProjectDependencies(project)
 
+            /*
             project.extensions.karafFeatures.features {
+
                 myFeature {
                     name = 'karaf-features-simple-project'
                     bundle {
@@ -49,6 +51,7 @@ class KarafFeaturesSpec extends Specification {
                     }
                 }
             }
+            */
 
             def featuresStr = project.tasks.generateKarafFeatures.generateFeatures()
             def featuresXml = new XmlSlurper().parseText(featuresStr)

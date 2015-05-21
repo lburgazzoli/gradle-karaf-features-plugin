@@ -15,6 +15,7 @@
  */
 package com.github.lburgazzoli.gradle.plugin.karaf.features
 
+import com.github.lburgazzoli.gradle.plugin.karaf.features.model.FeatureDescriptor
 import org.gradle.testfixtures.ProjectBuilder
 import spock.lang.Specification
 
@@ -35,10 +36,13 @@ class KarafFeaturesSpec extends Specification {
 
     def 'Simple project'() {
         given:
-            def project = ProjectBuilder.builder().build()
+            def project = setupProjectAndDependencies()
+            def features = project.extensions.karafFeatures.features
         when:
-            setupProject(project)
-            setupProjectDependencies(project)
+            def feature = features.create('myFeature')
+            feature.name = 'karaf-features-simple-project'
+            //feature.bundle {
+            //}
 
             /*
             project.extensions.karafFeatures.features {
@@ -62,6 +66,14 @@ class KarafFeaturesSpec extends Specification {
     // *************************************************************************
     //
     // *************************************************************************
+
+    def setupProjectAndDependencies() {
+        def project = ProjectBuilder.builder().build()
+        setupProject(project)
+        setupProjectDependencies(project)
+
+        return project
+    }
 
     def setupProject(project) {
         project.apply plugin: KarafFeaturesPlugin.PLUGIN_ID

@@ -35,7 +35,7 @@ apply plugin: 'maven-publish-auth'
 
 sourceCompatibility = 1.6
 targetCompatibility = 1.6
-version             = '2.0.0-SNAPSHOT'
+version             = '2.0.1-SNAPSHOT'
 group               = 'com.github.lburgazzoli'
 
 ext {
@@ -87,8 +87,12 @@ jar {
 //
 // *****************************************************************************
 
+nexusStaging {
+    packageGroup = project.group
+}
+
 nexus {
-    sign    = false
+    sign = project.isReleaseVersion
 }
 
 extraArchive {
@@ -116,6 +120,17 @@ modifyPom {
             url                 = "${project.gitProject}"
             connection          = "scm:git:${project.gitProject}.git"
             developerConnection = "scm:git:${project.gitProject}.git"
+        }
+        
+        developers {
+            developer {
+                id 'lburgazzoli'
+                name 'Luca Burgazzoli'
+            }
+            developer {
+                id 'sebersole'
+                name 'Steve Ebersole'
+            }
         }
     }
 }

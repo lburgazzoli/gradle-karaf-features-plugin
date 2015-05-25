@@ -45,10 +45,7 @@ ext {
     gitRoot          = "https://github.com/lburgazzoli"
     gitProject       = "https://github.com/lburgazzoli/lb-gradle-plugins"
 
-    if (project.hasProperty('sonatypeUsername') && project.hasProperty('sonatypePassword')) {
-        nexusUsername = sonatypeUsername
-        nexusPassword = sonatypePassword
-    } else if(!project.hasProperty('nexusUsername') && !project.hasProperty('nexusPassword')) {
+    if(!project.hasProperty('nexusUsername') && !project.hasProperty('nexusPassword')) {
         nexusUsername = "$System.env.CI_DEPLOY_USERNAME"
         nexusPassword = "$System.env.CI_DEPLOY_PASSWORD"
     }
@@ -92,7 +89,7 @@ nexusStaging {
 }
 
 nexus {
-    sign    = false
+    sign = project.isReleaseVersion
 }
 
 extraArchive {
@@ -120,6 +117,17 @@ modifyPom {
             url                 = "${project.gitProject}"
             connection          = "scm:git:${project.gitProject}.git"
             developerConnection = "scm:git:${project.gitProject}.git"
+        }
+        
+        developers {
+            developer {
+                id 'lburgazzoli'
+                name 'Luca Burgazzoli'
+            }
+            developer {
+                id 'sebersole'
+                name 'Steve Ebersole'
+            }
         }
     }
 }

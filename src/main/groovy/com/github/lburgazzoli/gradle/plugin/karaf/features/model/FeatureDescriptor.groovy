@@ -88,8 +88,25 @@ class FeatureDescriptor {
 		}
 	}
 
+    def bundles(Collection<String> patterns, Closure closure) {
+        patterns.each {
+            pattern -> bundle(pattern, closure)
+        }
+    }
+
+	def bundle(String pattern, Closure closure) {
+        def descriptor = new BundleInstructionDescriptor(BundleMatcher.from(pattern))
+        ConfigureUtil.configure( closure, descriptor )
+
+        if ( bundles == null ) {
+            bundles = [ descriptor ]
+        } else {
+            bundles += descriptor
+        }
+    }
+
 	def bundle(Closure closure) {
-		BundleInstructionDescriptor descriptor = new BundleInstructionDescriptor();
+		def descriptor = new ExtendedBundleInstructionDescriptor()
 		ConfigureUtil.configure( closure, descriptor )
 
 		if ( bundles == null ) {

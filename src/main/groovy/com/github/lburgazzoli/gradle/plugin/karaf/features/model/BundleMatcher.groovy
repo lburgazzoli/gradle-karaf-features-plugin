@@ -15,15 +15,17 @@
  */
 package com.github.lburgazzoli.gradle.plugin.karaf.features.model
 
+import org.gradle.api.IllegalDependencyNotation
 import org.gradle.api.artifacts.ModuleVersionIdentifier
 import org.gradle.api.artifacts.result.ResolvedComponentResult
 import org.gradle.api.internal.artifacts.DefaultModuleVersionIdentifier
+import org.gradle.util.GUtil
 
 /**
  * @author Steve Ebersole
  * @author Luca Burgazzoli
  */
-public class Matcher {
+public class BundleMatcher {
 	def String group
 	def String name
 	def String version
@@ -41,5 +43,19 @@ public class Matcher {
 
 	public ModuleVersionIdentifier asModuleVersionIdentifier() {
 		return new DefaultModuleVersionIdentifier( group, name, version )
+	}
+
+	public static BundleMatcher from(String notation) {
+		final String[] notationParts = notation.split(":");
+		if (notationParts.length < 1 || notationParts.length > 3) {
+			throw new IllegalDependencyNotation(
+                "Supplied String module notation '${notation}' is invalid.");
+		}
+
+        return [
+            group   : notationParts.length >= 1 ? notationParts[0] :  null,
+            name    : notationParts.length >= 2 ? notationParts[1] :  null,
+            version : notationParts.length == 3 ? notationParts[2] :  null,
+        ] as BundleMatcher
 	}
 }

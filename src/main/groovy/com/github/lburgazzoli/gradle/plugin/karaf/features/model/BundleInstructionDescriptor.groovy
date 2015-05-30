@@ -27,7 +27,7 @@ class BundleInstructionDescriptor {
 	/**
 	 * Defines the parameters for matching the dependency that this descriptor describes.
 	 */
-	private Matcher matcher = new Matcher();
+	private BundleMatcher matcher
 
 	/**
 	 * Should the selected dependency be included as a bundle?  The default is {@code true}; if
@@ -47,33 +47,29 @@ class BundleInstructionDescriptor {
 	 */
 	def Boolean dependency
 
-	def Matcher remap
+	def BundleMatcher remap
 
 	private BundleWrapInstructionsDescriptor bundleWrapInstructionsDescriptor;
 
-	def match(Closure closure) {
-		ConfigureUtil.configure( closure, matcher )
-	}
+    protected BundleInstructionDescriptor(BundleMatcher matcher) {
+        this.matcher = matcher
+    }
 
-	def match(Map properties) {
-		ConfigureUtil.configureByMap( properties, matcher )
-	}
-
-	def Matcher getMatcher() {
+	def BundleMatcher getMatcher() {
 		return matcher
 	}
 
 	def remap(Closure closure) {
-		remap = new Matcher()
+		remap = new BundleMatcher()
 		ConfigureUtil.configure( closure, remap )
 	}
 
 	def remap(Map properties) {
-		remap = new Matcher()
+		remap = new BundleMatcher()
 		ConfigureUtil.configureByMap( properties, remap )
 	}
 
-	Matcher getRemap() {
+	BundleMatcher getRemap() {
 		return remap
 	}
 

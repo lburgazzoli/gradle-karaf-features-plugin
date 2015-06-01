@@ -88,12 +88,6 @@ class FeatureDescriptor {
 		}
 	}
 
-    def bundles(Collection<String> patterns, Closure closure) {
-        patterns.each {
-            pattern -> bundle(pattern, closure)
-        }
-    }
-
 	def bundle(String pattern, Closure closure) {
         def descriptor = new BundleInstructionDescriptor(BundleMatcher.from(pattern))
         ConfigureUtil.configure( closure, descriptor )

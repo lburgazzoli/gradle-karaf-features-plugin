@@ -133,8 +133,6 @@ modifyPom {
     }
 }
 
-afterReleaseBuild.dependsOn uploadArchives
-
 publishing {
     publications {
         mavenJava(MavenPublication) {
@@ -149,6 +147,11 @@ publishing {
     }
 }
 
+afterReleaseBuild.dependsOn uploadArchives
+
+task nexusRelease(dependsOn: [closeRepository, promoteRepository]) {
+    println "Release Repo"
+}
 
 // *****************************************************************************
 //

@@ -12,7 +12,7 @@ buildscript {
     dependencies {
         classpath 'com.bmuschko:gradle-nexus-plugin:2.3.1'
         classpath 'org.hibernate.build.gradle:gradle-maven-publish-auth:2.0.1'
-        classpath 'io.codearte.gradle.nexus:gradle-nexus-staging-plugin:0.5.1'
+        classpath 'io.codearte.gradle.nexus:gradle-nexus-staging-plugin:0.5.3'
         classpath 'net.researchgate:gradle-release:2.1.1'
     }
 }
@@ -84,10 +84,6 @@ jar {
 // *****************************************************************************
 //
 // *****************************************************************************
-
-nexusStaging {
-    packageGroup = project.group
-}
 
 nexus {
     sign = project.isReleaseVersion

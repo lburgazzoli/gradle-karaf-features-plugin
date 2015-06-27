@@ -155,7 +155,7 @@ pluginBundle {
 
     plugins {
         karafFeaturesPlugin {
-            id          = 'https://github.com/lburgazzoli/gradle-karaf-features-plugin'
+            id          = 'com.github.lburgazzoli.karaf.features'
             displayName = 'Gradle Karaf Features Plugin'
         }
     }

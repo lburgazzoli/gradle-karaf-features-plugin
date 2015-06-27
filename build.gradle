@@ -7,13 +7,15 @@ buildscript {
         mavenCentral()
         mavenLocal()
         jcenter()
+        maven { url "https://plugins.gradle.org/m2/" }
     }
 
     dependencies {
         classpath 'com.bmuschko:gradle-nexus-plugin:2.3.1'
         classpath 'org.hibernate.build.gradle:gradle-maven-publish-auth:2.0.1'
         classpath 'io.codearte.gradle.nexus:gradle-nexus-staging-plugin:0.5.3'
-        classpath 'net.researchgate:gradle-release:2.1.1'
+        classpath 'net.researchgate:gradle-release:2.1.2'
+        classpath 'com.gradle.publish:plugin-publish-plugin:0.9.0'
     }
 }
 
@@ -27,6 +29,7 @@ apply plugin: 'maven'
 apply plugin: 'com.bmuschko.nexus'
 apply plugin: 'io.codearte.nexus-staging'
 apply plugin: 'net.researchgate.release'
+apply plugin: 'com.gradle.plugin-publish'
 
 // Added this (and publication def) to be able to publish to "maven local"
 // and the jboss snapshot repo for testing, since I do not have rights to
@@ -38,6 +41,7 @@ apply plugin: 'maven-publish-auth'
 sourceCompatibility = 1.6
 targetCompatibility = 1.6
 group               = 'com.github.lburgazzoli'
+description         = 'A gradle plugin to create Karaf features'
 
 ext {
     gradleVersion    = '2.4'
@@ -143,9 +147,24 @@ publishing {
     }
 }
 
+pluginBundle {
+    website     = 'https://github.com/lburgazzoli/gradle-karaf-features-plugin'
+    vcsUrl      = 'https://github.com/lburgazzoli/gradle-karaf-features-plugin'
+    description = project.description
+    tags        = [ 'osgi', 'karaf' ]
+
+    plugins {
+        karafFeaturesPlugin {
+            id          = 'https://github.com/lburgazzoli/gradle-karaf-features-plugin'
+            displayName = 'Gradle Karaf Features Plugin'
+        }
+    }
+}
+
+
 afterReleaseBuild.dependsOn uploadArchives
 
-task nexusRelease(dependsOn: [closeRepository, promoteRepository]) {
+task nexusRelease(dependsOn: closeAndPromoteRepository) {
     println "Release Repo"
 }
 

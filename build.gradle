@@ -44,7 +44,7 @@ group               = 'com.github.lburgazzoli'
 description         = 'A gradle plugin to create Karaf features'
 
 ext {
-    gradleVersion    = '2.4'
+    gradleVersion    = '2.6'
     gradleScriptDir  = "${rootProject.projectDir}/gradle"
     isReleaseVersion = !version.endsWith("SNAPSHOT")
     gitRoot          = "https://github.com/lburgazzoli"

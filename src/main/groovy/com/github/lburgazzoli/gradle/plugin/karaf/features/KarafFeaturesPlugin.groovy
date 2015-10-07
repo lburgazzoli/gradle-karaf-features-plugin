@@ -19,6 +19,7 @@ import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.Task
 import org.gradle.api.artifacts.Configuration
+import org.gradle.api.logging.Logger
 
 /**
  * Plugin for integrating Karaf features generation into a build.  Execution is configured
@@ -35,6 +36,7 @@ class KarafFeaturesPlugin implements Plugin<Project> {
 
     @Override
     void apply(Project project) {
+        project.logger.debug("Karaf features plugin apply");
         Configuration configuration = project.configurations.maybeCreate( CONFIGURATION_NAME )
         KarafFeaturesTaskExtension extension = project.extensions.create( EXTENSION_NAME, KarafFeaturesTaskExtension, project )
         Task task = project.task( TASK_NAME, type: KarafFeaturesTask )
@@ -42,11 +44,13 @@ class KarafFeaturesPlugin implements Plugin<Project> {
         project.afterEvaluate {
             if ( extension.features.empty ) {
                 // no features were added, so do the "default" bit...
+                project.logger.debug("Karaf features plugin: features empty for project '${project.name}', adding default");
                 extension.features {
                     feature {
                         name = project.name
                         projects = [project]
                         project.subprojects.each {
+                            project.logger.debug("Karaf features plugin: adding default feature ${project.name}, it = ${it}");
                             project( it )
                         }
                     }
@@ -56,13 +60,16 @@ class KarafFeaturesPlugin implements Plugin<Project> {
             task.inputs.files( configuration )
 
             extension.features.each { feature ->
+                project.logger.debug("Karaf feature '${feature.name}' processing, projects '${feature.projectDescriptors}'");
                 feature.bundleDependencies.each {
                     task.inputs.files( it )
                     task.dependsOn( it )
                 }
 
-                feature.projects.each { bundleProject ->
+                feature.projectDescriptors.each { bundleProjectDescriptor ->
                     // we need access the jar for any project we generate feature for
+                    def bundleProject = bundleProjectDescriptor.project
+                    project.logger.debug("Karaf feature '${feature.name}' processing project '${bundleProject.name}'");
                     task.dependsOn bundleProject.tasks.jar
 
                     // we also want our inputs to be based on the runtime configuration
@@ -76,5 +83,6 @@ class KarafFeaturesPlugin implements Plugin<Project> {
             }
 
         }
+        project.logger.debug("Karaf features finish");
     }
 }

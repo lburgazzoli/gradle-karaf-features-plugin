@@ -36,6 +36,7 @@ class KarafFeaturesTask extends DefaultTask {
 
     @TaskAction
     def generateFeaturesFile() {
+        project.logger.debug("Karaf features task start");
         // write out a features repository xml.
         extension.featuresXmlFile.parentFile.mkdirs()
 
@@ -70,6 +71,7 @@ class KarafFeaturesTask extends DefaultTask {
                     }
 
                     // Render bundle dependencies
+                    extension.getLogger().debug("Calculate bundle definitions for feature '${feature.name}'")
                     List<BundleDefinition> bundles = extension.bundleStrategy.bundleDefinitionCalculator.calculateBundleDefinitions(
                             feature,
                             extension,

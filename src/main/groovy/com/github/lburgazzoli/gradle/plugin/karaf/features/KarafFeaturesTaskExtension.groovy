@@ -69,6 +69,7 @@ class KarafFeaturesTaskExtension {
 
         // Create a dynamic container for FeatureDescriptor definitions by the user
         features = project.container( FeatureDescriptor, new FeatureDescriptorFactory( project, this ) )
+        
     }
 
     boolean isPreferObrBundles() {

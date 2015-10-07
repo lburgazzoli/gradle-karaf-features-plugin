@@ -29,6 +29,7 @@ import org.gradle.api.tasks.bundling.Jar
 
 import com.github.lburgazzoli.gradle.plugin.karaf.features.model.BundleInstructionDescriptor
 import com.github.lburgazzoli.gradle.plugin.karaf.features.model.FeatureDescriptor
+import com.github.lburgazzoli.gradle.plugin.karaf.features.model.ProjectDescriptor
 
 /**
  * @author Steve Ebersole
@@ -45,10 +46,10 @@ public class BundleDefinitionCalculatorMvnImpl implements BundleDefinitionCalcul
 			KarafFeaturesTaskExtension extension,
 			Configuration extraBundles) {
 		// The LinkedHashMap here will hold the dependencies in order, transitivity depth first
-		//      IMPL NOTE: Initially tried LinkedHashSet<ResolvedComponentResult>, but
-		//          ResolvedComponentResult does not properly implement equals/hashCode in terms
-		//          of GAV which is what we need this uniquely based on.  So for now we use
-		//          a LinkedHashMap keyed by the GAV.
+		//	  IMPL NOTE: Initially tried LinkedHashSet<ResolvedComponentResult>, but
+		//		  ResolvedComponentResult does not properly implement equals/hashCode in terms
+		//		  of GAV which is what we need this uniquely based on.  So for now we use
+		//		  a LinkedHashMap keyed by the GAV.
 		LinkedHashMap<ModuleVersionIdentifier,ResolvedComponentResult> orderedDependencyMap = new LinkedHashMap<ModuleVersionIdentifier,ResolvedComponentResult>()
 		// The Map here will hold all resolved artifacts (access to the actual files) for each dependency
 		Map<ModuleVersionIdentifier,File> resolvedArtifactMap = new HashMap<ModuleVersionIdentifier,File>()
@@ -58,22 +59,32 @@ public class BundleDefinitionCalculatorMvnImpl implements BundleDefinitionCalcul
 		feature.bundleDependencies.each {
 			collectDependencies( feature, orderedDependencyMap, resolvedArtifactMap, it, extension, false )
 		}
+		LinkedHashMap<ModuleVersionIdentifier,ResolvedComponentResult> finalOrderedDependencyMap = new LinkedHashMap<ModuleVersionIdentifier,ResolvedComponentResult>()
+		finalOrderedDependencyMap.putAll(orderedDependencyMap)
+		Set<ModuleVersionIdentifier> projectIdentifiers = new HashSet<ModuleVersionIdentifier>()
 
-		feature.projects.each { bundledProject ->
-			collectDependencies( feature, orderedDependencyMap, resolvedArtifactMap, bundledProject.configurations.runtime, extension, true )
-			resolvedArtifactMap.put(
-					new DefaultModuleVersionIdentifier(
-							"${bundledProject.group}",
-							"${bundledProject.name}",
-							"${bundledProject.version}"
-					),
-					( bundledProject.tasks.jar as Jar ).archivePath
+		feature.projectDescriptors.each { bundledProjectDescriptor ->
+			def bundledProject = bundledProjectDescriptor.project
+			feature.project.logger.debug("Processing project '${bundledProject.name}' for feature '${feature.name}' dependencies")
+			collectDependencies( feature, bundledProjectDescriptor.excludeTransitiveDependecies ? orderedDependencyMap : finalOrderedDependencyMap, resolvedArtifactMap, bundledProject.configurations.runtime, extension, true )
+			ModuleVersionIdentifier projectVersionId = new DefaultModuleVersionIdentifier(
+				"${bundledProject.group}",
+				"${bundledProject.name}",
+				"${bundledProject.version}"
 			)
+			resolvedArtifactMap.put( projectVersionId, ( bundledProject.tasks.jar as Jar ).archivePath )
+			projectIdentifiers.add( projectVersionId )
+		}
+        
+		orderedDependencyMap.each { k, v ->
+			if ( projectIdentifiers.contains( k ) ) {
+				finalOrderedDependencyMap.put( k, v)
+			}
 		}
 
 		List<BundleDefinition> bundleDefinitions = []
 
-		orderedDependencyMap.values().each { dep ->
+		finalOrderedDependencyMap.values().each { dep ->
 			final BundleInstructionDescriptor bundleDescriptor = findBundleInstructions( dep, feature )
 			final File resolvedBundleArtifact = resolvedArtifactMap.get( dep.moduleVersion )
 
@@ -107,6 +118,7 @@ public class BundleDefinitionCalculatorMvnImpl implements BundleDefinitionCalcul
 		collectOrderedDependencies( feature, orderedDependencyMap, configuration.incoming.resolutionResult.root, extension, includeRoot )
 
 		configuration.resolvedConfiguration.resolvedArtifacts.each {
+			feature.project.logger.debug("Collect dependencies for feature '${feature.name}': add module id '${it.moduleVersion.id}'")
 			resolvedArtifactMap.put( it.moduleVersion.id, it.file );
 		}
 	}
@@ -127,7 +139,7 @@ public class BundleDefinitionCalculatorMvnImpl implements BundleDefinitionCalcul
 			boolean includeResolvedComponentResult) {
 
 		final BundleInstructionDescriptor bundleInstructions = findBundleInstructions( resolvedComponentResult, feature )
-        if ( bundleInstructions != null && !bundleInstructions.include ) {
+		if ( bundleInstructions != null && !bundleInstructions.include ) {
 			return;
 		}
 
@@ -142,9 +154,9 @@ public class BundleDefinitionCalculatorMvnImpl implements BundleDefinitionCalcul
 
 		// then add this one (if param says to)
 		if ( includeResolvedComponentResult ) {
-            if(resolvedComponentResult.moduleVersion.group) {
-                orderedDependencyMap.put(resolvedComponentResult.moduleVersion, resolvedComponentResult)
-            }
+			if(resolvedComponentResult.moduleVersion.group) {
+				orderedDependencyMap.put(resolvedComponentResult.moduleVersion, resolvedComponentResult)
+			}
 		}
 	}
 

@@ -22,10 +22,11 @@ karafFeatures {
       repositories = ['mvn:group/dependent-feature/1.2.3/xml/features']
       description = 'Some useful description'
       dependencyFeatureNames = ['dependent-feature']
-      project(project(':subproject1'))
-      project {
-        project = project('subproject2')
-        excludeTransitiveDependencies = true //false by default
+      project(':subproject1')
+      project(':subproject2') {
+        dependencies {
+          transitive = false //true by default
+        }
       }
     }
     testFeature {

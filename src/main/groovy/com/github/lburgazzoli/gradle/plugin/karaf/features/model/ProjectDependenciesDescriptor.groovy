@@ -32,30 +32,14 @@ import com.github.lburgazzoli.gradle.plugin.karaf.features.KarafFeaturesTaskExte
  */
  
 @ToString(includeNames=true)
-class ProjectDescriptor {
-	/**
-	 * Project to be included in this feature.  We will pick up
-	 * all of its {@code configurations.runtime} dependencies and
-	 * add it as bundle. This project runtime configurations are
-	 * considered additive to the {@link #bundleDependencies} configurations
-	 */
-	def Project project
+class ProjectDependenciesDescriptor {
 
 	/**
-	 * dependencies descriptor object used to specify which dependencies should be included
+	 * The flag how to process project's transitive dependecies
+	 * WARN: not fully supported with Obr dependecies
 	 */
-	def ProjectDependenciesDescriptor dependenciesDescriptor
+	def Boolean transitive = true
 
-	ProjectDescriptor(Project project) {
-		this.project = project
-		this.dependenciesDescriptor = new ProjectDependenciesDescriptor()
-	}
-    
-	def dependencies(Closure cl) {
-		ConfigureUtil.configure( cl, this.dependenciesDescriptor )
-	}
-    
-	ProjectDependenciesDescriptor getDependencies() {
-		return this.dependenciesDescriptor;
+	ProjectDependenciesDescriptor() {
 	}
 }

@@ -65,8 +65,8 @@ public class BundleDefinitionCalculatorMvnImpl implements BundleDefinitionCalcul
 
 		feature.projectDescriptors.each { bundledProjectDescriptor ->
 			def bundledProject = bundledProjectDescriptor.project
-			feature.project.logger.debug("Processing project '${bundledProject.name}' for feature '${feature.name}' dependencies")
-			collectDependencies( feature, bundledProjectDescriptor.excludeTransitiveDependecies ? orderedDependencyMap : finalOrderedDependencyMap, resolvedArtifactMap, bundledProject.configurations.runtime, extension, true )
+			feature.project.logger.debug("Processing project '${bundledProject.name}' for feature '${feature.name}' dependencies ${bundledProjectDescriptor.dependencies}")
+			collectDependencies( feature, bundledProjectDescriptor.dependencies.transitive ? finalOrderedDependencyMap : orderedDependencyMap, resolvedArtifactMap, bundledProject.configurations.runtime, extension, true )
 			ModuleVersionIdentifier projectVersionId = new DefaultModuleVersionIdentifier(
 				"${bundledProject.group}",
 				"${bundledProject.name}",
@@ -85,6 +85,7 @@ public class BundleDefinitionCalculatorMvnImpl implements BundleDefinitionCalcul
 		List<BundleDefinition> bundleDefinitions = []
 
 		finalOrderedDependencyMap.values().each { dep ->
+            
 			final BundleInstructionDescriptor bundleDescriptor = findBundleInstructions( dep, feature )
 			final File resolvedBundleArtifact = resolvedArtifactMap.get( dep.moduleVersion )
 

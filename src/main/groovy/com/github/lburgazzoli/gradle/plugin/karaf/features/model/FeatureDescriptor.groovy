@@ -80,6 +80,25 @@ class FeatureDescriptor {
 		this.project = project
 	}
 
+	def project(String projectName, Closure closure) {
+		this.project.getAllprojects().find {it.name == projectName || ":${it.name}" == projectName }.each { project ->
+			def projectDescriptor = new ProjectDescriptor(project)
+			if ( closure ) {
+				ConfigureUtil.configure( closure, projectDescriptor )
+			}
+			this.project.logger.debug("Add project '${project.name}' to feature '${this.name}'");
+			if ( this.projectDescriptors == null ) {
+				this.projectDescriptors = [ projectDescriptor ]
+			} else {
+				this.projectDescriptors += projectDescriptor
+			}
+		}
+	}
+
+	def project(String projectName) {
+		project(projectName, null)
+	}
+
 	def project(Project project) {
 		this.project.logger.debug("Add project '${project.name}' to feature '${this.name}'");
 		def projectDescriptor = new ProjectDescriptor(project)
@@ -89,12 +108,11 @@ class FeatureDescriptor {
 			this.projectDescriptors += projectDescriptor
 		}
 	}
-	
+
 	def project(Closure closure) {
 		this.project.logger.debug("Add new project via closure to feature '${this.name}'");
 		def projectDescriptor = new ProjectDescriptor(null)
 		ConfigureUtil.configure( closure, projectDescriptor )
-        this.project.logger.debug("ConfigureUtil finished")
 		if ( this.projectDescriptors == null ) {
 			this.projectDescriptors = [ projectDescriptor ]
 		} else {
@@ -124,21 +142,8 @@ class FeatureDescriptor {
 			bundles += descriptor
 		}
 	}
-
-	@Deprecated
-	/**
-	 * Please use getProjectDescriptors instead
-	 */
-	public Project[] getProjects() {
-		if ( this.projectDescriptors == null) {
-			return [ this.project ]
-		}
-		def List<Project> projects = new ArrayList(this.projectDescriptors.size())
-		this.projectDescriptors.each { p -> projects.add(p.project) }
-		return projects
-	}
 	
 	public ProjectDescriptor[] getProjectDescriptors() {
-		return this.projectDescriptors != null ? this.projectDescriptors : [ new ProjectDescriptor(this.project) ]
+		return this.projectDescriptors != null ? this.projectDescriptors : []
 	}
 }

@@ -7,9 +7,11 @@ addons:
 script: "
   if [ ${TRAVIS_PULL_REQUEST} = 'false' ]; 
   then
-      ./gradlew test uploadArchives;
+    echo \"== MAIN build ==\";
+    ./gradlew test uploadArchives;
   else
-      ./gradlew test;
+    echo \"== PULL build ==\";
+    ./gradlew test;
   fi
 "
 jdk:

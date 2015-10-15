@@ -5,11 +5,12 @@ addons:
     packages:
       - oracle-java8-installer
 script: "
-if [ ${TRAVIS_PULL_REQUEST} = 'false' ]; then
-    ./gradlew test uploadArchives
+if [ ${TRAVIS_PULL_REQUEST} = 'false' ]; 
+then
+    ./gradlew test uploadArchives;
 else
-    ./gradlew test
-fi    
+    ./gradlew test;
+fi
 "
 jdk:
 - oraclejdk8

@@ -1,11 +1,15 @@
 sudo: false
 language: java
+addons:
+  apt:
+    packages:
+      - oracle-java8-installer
 script:
 - '[ "${TRAVIS_PULL_REQUEST}" = "false" ] || ./gradlew test uploadArchives'
 - '[ "${TRAVIS_PULL_REQUEST}" != "false" ] || ./gradlew test'
 jdk:
-- oraclejdk7
+- oraclejdk8
 env:
   global:
-  - secure: bHjM84orF0jPB178ElPPH3dq9ojY/000y7D4iUifehEKoPOBbYAyp5UTQ+VFpc9K02j1NQVisv8pax97u3ikcmu2P3+alcOmKE74LVNzhHAksK1gIS2h1Hsu6SSzw5YDwKxL/W6cRTBpaUMbhTQZjYBvXA9CZuY/zOIR7XF2Nj0=
-  - secure: WcRX/4xibD0bBfncmTbv76cLPlvX0GBuyMtVjgAW4DCgXsuesULN+DS2XL527Ei8HyWPHBvVl0GQD2p8vsn0PEyCqxq+ftsEqH7rA0YjpOmAmEWkkIWYzdMRM7MTiQbNvfnXWKlq9Sm5IgqzPlAN8M+pXTONl9JHufKOOvbB2p8=
+  - secure: H5D+dQ4BH263Zbw56vZU1j6gZgzPaL5DvQKuPUj9dPFJZGkSflCyLCcOJKMoXwp9m8xUQJ1+5cIhCa06IwiV54dleZC0tcI72mfTQ9ZTiRixEGAwgcfgnAoQunVRHL+bkqUeUB+kK5Gcf9YDWUpSdGJYiuVO2zJqMifnFxbnF5w=
+  - secure: eMPyAUFD6IlEwAdU1KM3OQt8klQI8wR2bijK8whQfoNF5CyjkoDVi/YEo5GtNzmcGujkREhN0IzIHCmJDUYWzzU/71sakibpo1iajQsKm+gBtHb5TYXRmHGPJeXQv8AT2YL+q6Z97UU0m0VnoOU7I/oJxOoiJ9d5XYPV40IpjaM=

@@ -5,6 +5,7 @@ addons:
     packages:
       - oracle-java8-installer
 script:
+- env
 - '[ "${TRAVIS_PULL_REQUEST}" = "false" ] || ./gradlew test uploadArchives'
 - '[ "${TRAVIS_PULL_REQUEST}" != "false" ] || ./gradlew test'
 jdk:

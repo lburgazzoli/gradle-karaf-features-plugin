@@ -4,10 +4,13 @@ addons:
   apt:
     packages:
       - oracle-java8-installer
-script:
-- env
-- '[ "${TRAVIS_PULL_REQUEST}" = "false" ] || ./gradlew test uploadArchives'
-- '[ "${TRAVIS_PULL_REQUEST}" != "false" ] || ./gradlew test'
+script: "
+if [ ${TRAVIS_PULL_REQUEST} = 'false' ]; then
+    ./gradlew test uploadArchives
+else
+    ./gradlew test
+fi    
+"
 jdk:
 - oraclejdk8
 env:

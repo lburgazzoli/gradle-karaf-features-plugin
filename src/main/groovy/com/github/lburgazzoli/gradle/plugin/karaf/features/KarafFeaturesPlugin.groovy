@@ -27,6 +27,7 @@ import org.gradle.api.logging.Logger
  *
  * @author Luca Burgazzoli
  * @author Steve Ebersole
+ * @author Sergey Nekhviadovich
  */
 class KarafFeaturesPlugin implements Plugin<Project> {
     public static final String PLUGIN_ID = 'com.github.lburgazzoli.karaf.features'

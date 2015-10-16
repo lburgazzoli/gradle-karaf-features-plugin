@@ -26,6 +26,7 @@ import groovy.xml.MarkupBuilder
  *
  * @author Luca Burgazzoli
  * @author Steve Ebersole
+ * @author Sergey Nekhviadovich
  */
 class KarafFeaturesTask extends DefaultTask {
     public static final String FEATURES_XMLNS = 'http://karaf.apache.org/xmlns/features/v1.2.0'

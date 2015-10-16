@@ -27,6 +27,7 @@ import com.github.lburgazzoli.gradle.plugin.karaf.features.KarafFeaturesTaskExte
  *
  * @author Steve Ebersole
  * @author Luca Burgazzoli
+ * @author Sergey Nekhviadovich
  */
 class FeatureDescriptor {
 	/**

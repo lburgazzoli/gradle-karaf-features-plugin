@@ -27,6 +27,7 @@ import com.github.lburgazzoli.gradle.plugin.karaf.features.model.FeatureDescript
  *
  * @author Luca Burgazzoli
  * @author Steve Ebersole
+ * @author Sergey Nekhviadovich
  */
 class KarafFeaturesTaskExtension {
     private final Project project

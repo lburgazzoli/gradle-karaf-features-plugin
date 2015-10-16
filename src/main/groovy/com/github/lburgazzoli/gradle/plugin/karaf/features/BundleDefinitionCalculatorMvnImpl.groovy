@@ -33,6 +33,7 @@ import com.github.lburgazzoli.gradle.plugin.karaf.features.model.ProjectDescript
 
 /**
  * @author Steve Ebersole
+ * @author Sergey Nekhviadovich
  */
 public class BundleDefinitionCalculatorMvnImpl implements BundleDefinitionCalculator {
 	/**
@@ -59,6 +60,9 @@ public class BundleDefinitionCalculatorMvnImpl implements BundleDefinitionCalcul
 		feature.bundleDependencies.each {
 			collectDependencies( feature, orderedDependencyMap, resolvedArtifactMap, it, extension, false )
 		}
+		//A bit tricky approach to handle excluding transitive dependencies:
+		//We have finalOrderedDependencyMap for result dependencies. We add there root projects and full projects where transitive dependencies included
+		//To exclude transitive dependencies we have temporary orderedDependencyMap
 		LinkedHashMap<ModuleVersionIdentifier,ResolvedComponentResult> finalOrderedDependencyMap = new LinkedHashMap<ModuleVersionIdentifier,ResolvedComponentResult>()
 		finalOrderedDependencyMap.putAll(orderedDependencyMap)
 		Set<ModuleVersionIdentifier> projectIdentifiers = new HashSet<ModuleVersionIdentifier>()
@@ -66,6 +70,7 @@ public class BundleDefinitionCalculatorMvnImpl implements BundleDefinitionCalcul
 		feature.projectDescriptors.each { bundledProjectDescriptor ->
 			def bundledProject = bundledProjectDescriptor.project
 			feature.project.logger.debug("Processing project '${bundledProject.name}' for feature '${feature.name}' dependencies ${bundledProjectDescriptor.dependencies}")
+            
 			collectDependencies( feature, bundledProjectDescriptor.dependencies.transitive ? finalOrderedDependencyMap : orderedDependencyMap, resolvedArtifactMap, bundledProject.configurations.runtime, extension, true )
 			ModuleVersionIdentifier projectVersionId = new DefaultModuleVersionIdentifier(
 				"${bundledProject.group}",

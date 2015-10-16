@@ -32,6 +32,7 @@ import spock.lang.Specification
 
 /**
  * @author Luca Burgazzoli
+ * @author Sergey Nekhviadovich
  */
 class KarafFeaturesSpec extends Specification {
 

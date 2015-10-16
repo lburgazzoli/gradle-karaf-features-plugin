@@ -28,6 +28,7 @@ import com.github.lburgazzoli.gradle.plugin.karaf.features.model.ProjectDescript
 
 /**
  * @author Steve Ebersole
+ * @author Sergey Nekhviadovich
  */
 class BundleDefinitionCalculatorObrImpl implements BundleDefinitionCalculator {
 	/**

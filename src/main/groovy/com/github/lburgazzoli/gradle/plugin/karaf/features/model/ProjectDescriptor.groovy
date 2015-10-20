@@ -46,6 +46,11 @@ class ProjectDescriptor {
 	 */
 	def ProjectDependenciesDescriptor dependenciesDescriptor
 
+	/**
+	 * Property to override project.name while feature geeration
+	 */
+	def String artifactId
+
 	ProjectDescriptor(Project project) {
 		this.project = project
 		this.dependenciesDescriptor = new ProjectDependenciesDescriptor()

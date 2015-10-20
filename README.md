@@ -27,6 +27,7 @@ karafFeatures {
         dependencies {
           transitive = false //true by default
         }
+        artifactId = "newSubProject2" // project name by default
       }
     }
     testFeature {

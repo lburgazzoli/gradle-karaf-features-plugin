@@ -27,6 +27,7 @@ import com.github.lburgazzoli.gradle.plugin.karaf.features.model.FeatureDescript
  *
  * @author Luca Burgazzoli
  * @author Steve Ebersole
+ * @author Sergey Nekhviadovich
  */
 class KarafFeaturesTaskExtension {
     private final Project project
@@ -69,6 +70,7 @@ class KarafFeaturesTaskExtension {
 
         // Create a dynamic container for FeatureDescriptor definitions by the user
         features = project.container( FeatureDescriptor, new FeatureDescriptorFactory( project, this ) )
+        
     }
 
     boolean isPreferObrBundles() {

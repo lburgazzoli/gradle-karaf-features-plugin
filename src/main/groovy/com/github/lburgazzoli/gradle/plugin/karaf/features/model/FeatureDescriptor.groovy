@@ -27,6 +27,7 @@ import com.github.lburgazzoli.gradle.plugin.karaf.features.KarafFeaturesTaskExte
  *
  * @author Steve Ebersole
  * @author Luca Burgazzoli
+ * @author Sergey Nekhviadovich
  */
 class FeatureDescriptor {
 	/**
@@ -44,10 +45,10 @@ class FeatureDescriptor {
 	 */
 	def String description
 
-    /**
-     * The project from which the plugin is instantiated
-     */
-    def Project project
+	/**
+	 * The project from which the plugin is instantiated
+	 */
+	def Project project
 
 	/**
 	 * Any projects to be included in this feature.  We will pick up
@@ -55,12 +56,12 @@ class FeatureDescriptor {
 	 * add them as bundles.  These project runtime configurations are
 	 * considered additive to the {@link #bundleDependencies} configurations
 	 */
-	def Project[] projects
+	def ProjectDescriptor[] projectDescriptors
 
 	/**
 	 * Any Configurations containing dependencies to apply as bundles
 	 * to this feature.  These configurations are considered additive to the
-	 * project runtime configurations from {@link #projects}
+	 * project runtime configurations from {@link #projectDescriptors}
 	 */
 	def Configuration[] bundleDependencies
 
@@ -80,24 +81,57 @@ class FeatureDescriptor {
 		this.project = project
 	}
 
-	def project(Project project) {
-		if ( this.projects == null ) {
-			this.projects = [ project ]
-		} else {
-			this.projects += project
+	def project(String projectName, Closure closure) {
+		this.project.getAllprojects().find {it.name == projectName || ":${it.name}" == projectName }.each { project ->
+			def projectDescriptor = new ProjectDescriptor(project)
+			if ( closure ) {
+				ConfigureUtil.configure( closure, projectDescriptor )
+			}
+			this.project.logger.debug("Add project '${project.name}' to feature '${this.name}'");
+			if ( this.projectDescriptors == null ) {
+				this.projectDescriptors = [ projectDescriptor ]
+			} else {
+				this.projectDescriptors += projectDescriptor
+			}
 		}
 	}
 
-	def bundle(String pattern, Closure closure) {
-        def descriptor = new BundleInstructionDescriptor(BundleMatcher.from(pattern))
-        ConfigureUtil.configure( closure, descriptor )
+	def project(String projectName) {
+		project(projectName, null)
+	}
 
-        if ( bundles == null ) {
-            bundles = [ descriptor ]
-        } else {
-            bundles += descriptor
-        }
-    }
+	def project(Project project) {
+		this.project.logger.debug("Add project '${project.name}' to feature '${this.name}'");
+		def projectDescriptor = new ProjectDescriptor(project)
+		if ( this.projectDescriptors == null ) {
+			this.projectDescriptors = [ projectDescriptor ]
+		} else {
+			this.projectDescriptors += projectDescriptor
+		}
+	}
+
+	def project(Closure closure) {
+		this.project.logger.debug("Add new project via closure to feature '${this.name}'");
+		def projectDescriptor = new ProjectDescriptor(null)
+		ConfigureUtil.configure( closure, projectDescriptor )
+		if ( this.projectDescriptors == null ) {
+			this.projectDescriptors = [ projectDescriptor ]
+		} else {
+			this.projectDescriptors += projectDescriptor
+		}
+		this.project.logger.debug("Added new project descriptor '${projectDescriptor}' to feature '${this.name}'");
+	}
+
+	def bundle(String pattern, Closure closure) {
+		def descriptor = new BundleInstructionDescriptor(BundleMatcher.from(pattern))
+		ConfigureUtil.configure( closure, descriptor )
+
+		if ( bundles == null ) {
+			bundles = [ descriptor ]
+		} else {
+			bundles += descriptor
+		}
+	}
 
 	def bundle(Closure closure) {
 		def descriptor = new ExtendedBundleInstructionDescriptor()
@@ -109,8 +143,8 @@ class FeatureDescriptor {
 			bundles += descriptor
 		}
 	}
-
-    public Project[] getProjects() {
-        return this.projects != null ? this.projects : [ this.project ]
-    }
+	
+	public ProjectDescriptor[] getProjectDescriptors() {
+		return this.projectDescriptors != null ? this.projectDescriptors : []
+	}
 }

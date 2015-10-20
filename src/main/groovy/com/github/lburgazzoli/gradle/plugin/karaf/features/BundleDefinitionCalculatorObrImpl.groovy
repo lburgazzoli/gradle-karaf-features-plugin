@@ -24,9 +24,11 @@ import org.gradle.api.artifacts.result.UnresolvedDependencyResult
 
 import com.github.lburgazzoli.gradle.plugin.karaf.features.model.BundleInstructionDescriptor
 import com.github.lburgazzoli.gradle.plugin.karaf.features.model.FeatureDescriptor
+import com.github.lburgazzoli.gradle.plugin.karaf.features.model.ProjectDescriptor
 
 /**
  * @author Steve Ebersole
+ * @author Sergey Nekhviadovich
  */
 class BundleDefinitionCalculatorObrImpl implements BundleDefinitionCalculator {
 	/**
@@ -40,12 +42,12 @@ class BundleDefinitionCalculatorObrImpl implements BundleDefinitionCalculator {
 			KarafFeaturesTaskExtension extension,
 			Configuration extraBundles) {
 		LinkedHashSet<ModuleVersionIdentifier> dependencies = []
-		collectDependencies( feature, dependencies, extraBundles )
+		collectDependencies( feature, dependencies, extraBundles, null )
 		feature.bundleDependencies.each {
-			collectDependencies( feature, dependencies, it )
+			collectDependencies( feature, dependencies, it, null )
 		}
-		feature.projects.each { bundledProject ->
-			collectDependencies( feature, dependencies, bundledProject.configurations.runtime )
+		feature.projectDescriptors.each { bundledProjectDescriptor ->
+			collectDependencies( feature, dependencies, bundledProjectDescriptor.project.configurations.runtime, bundledProjectDescriptor )
 		}
 
 		List<BundleDefinition> bundleDefinitions = []
@@ -70,7 +72,8 @@ class BundleDefinitionCalculatorObrImpl implements BundleDefinitionCalculator {
 	def static collectDependencies(
 			FeatureDescriptor feature,
 			LinkedHashSet<ModuleVersionIdentifier> moduleVersionIdentifiers,
-			Configuration configuration) {
+			Configuration configuration, 
+            ProjectDescriptor projectDescriptor) {
 		ResolvedComponentResult root = configuration.incoming.resolutionResult.root
 
 		final BundleInstructionDescriptor bundleInstructions = findBundleInstructions( root.moduleVersion, feature )
@@ -79,17 +82,20 @@ class BundleDefinitionCalculatorObrImpl implements BundleDefinitionCalculator {
 		}
 
 		// add dependencies first
-		for ( DependencyResult dependency : root.dependencies ) {
-			if ( dependency instanceof UnresolvedDependencyResult ) {
-				continue;
-			}
+		if ( !projectDescriptor.excludeTransitiveDependecies ) {
+			for ( DependencyResult dependency : root.dependencies ) {
+				if ( dependency instanceof UnresolvedDependencyResult ) {
+					continue;
+				}
 
-			ResolvedDependencyResult resolvedDependencyResult = (ResolvedDependencyResult) dependency;
-			final BundleInstructionDescriptor bundleInstructions2 = findBundleInstructions( resolvedDependencyResult.selected.moduleVersion, feature )
-			if ( bundleInstructions2 == null || bundleInstructions2.include ) {
-				moduleVersionIdentifiers.add( ( (ResolvedDependencyResult) dependency ).selected.moduleVersion )
+				ResolvedDependencyResult resolvedDependencyResult = (ResolvedDependencyResult) dependency;
+				final BundleInstructionDescriptor bundleInstructions2 = findBundleInstructions( resolvedDependencyResult.selected.moduleVersion, feature )
+				if ( bundleInstructions2 == null || bundleInstructions2.include ) {
+					moduleVersionIdentifiers.add( ( (ResolvedDependencyResult) dependency ).selected.moduleVersion )
+				}
 			}
 		}
+		
 
 		// then add the root one
 		moduleVersionIdentifiers.add( root.moduleVersion )

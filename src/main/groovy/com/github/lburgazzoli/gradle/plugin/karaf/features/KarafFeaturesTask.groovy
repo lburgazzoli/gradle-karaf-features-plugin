@@ -26,6 +26,7 @@ import groovy.xml.MarkupBuilder
  *
  * @author Luca Burgazzoli
  * @author Steve Ebersole
+ * @author Sergey Nekhviadovich
  */
 class KarafFeaturesTask extends DefaultTask {
     public static final String FEATURES_XMLNS = 'http://karaf.apache.org/xmlns/features/v1.2.0'
@@ -36,6 +37,7 @@ class KarafFeaturesTask extends DefaultTask {
 
     @TaskAction
     def generateFeaturesFile() {
+        project.logger.debug("Karaf features task start");
         // write out a features repository xml.
         extension.featuresXmlFile.parentFile.mkdirs()
 
@@ -70,6 +72,7 @@ class KarafFeaturesTask extends DefaultTask {
                     }
 
                     // Render bundle dependencies
+                    extension.getLogger().debug("Calculate bundle definitions for feature '${feature.name}'")
                     List<BundleDefinition> bundles = extension.bundleStrategy.bundleDefinitionCalculator.calculateBundleDefinitions(
                             feature,
                             extension,

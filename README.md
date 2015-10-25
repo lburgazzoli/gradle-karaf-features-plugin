@@ -24,7 +24,7 @@ project(':subproject1') {
   }
 }
 
-project(':subproject1') {
+project(':subproject2') {
   dependencies {
     compile 'commons-io:commons-io:2.4'
   }

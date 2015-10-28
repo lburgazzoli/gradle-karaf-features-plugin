@@ -19,10 +19,11 @@ import java.io.File;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-import org.gradle.api.artifacts.Configuration;
-import org.gradle.api.artifacts.ModuleVersionIdentifier;
+import org.gradle.api.artifacts.Configuration
+import org.gradle.api.artifacts.ModuleVersionIdentifier
 import org.gradle.api.artifacts.result.ResolvedComponentResult
-import org.gradle.api.internal.artifacts.DefaultModuleVersionIdentifier;
+import org.gradle.api.internal.artifacts.DefaultModuleVersionIdentifier
+import org.gradle.api.artifacts.result.ComponentSelectionReason
 import org.gradle.api.tasks.bundling.Jar
 import org.gradle.testfixtures.ProjectBuilder
 
@@ -90,8 +91,9 @@ class KarafFeaturesSpec extends Specification {
             BundleDefinitionCalculatorMvnImpl.hasOsgiManifestHeaders() >> true
             BundleDefinitionCalculatorMvnImpl.collectDependencies(_, _, _, _, _, _) >> {feature, orderedDependencyMap, resolvedArtifactMap, configuration, extension, includeRoot ->
                 def mv = new DefaultModuleVersionIdentifier(subProject.group, subProject.name, subProject.version)
-                def result = Mock(ResolvedComponentResult);
+                def result = Mock(ResolvedComponentResult)
                 result.getModuleVersion() >> mv
+                result.getSelectionReason() >> Mock(ComponentSelectionReason)
                 orderedDependencyMap.put(mv, result)
             }
             BundleDefinitionCalculatorMvnImpl.baseMvnUrl(_) >> 'mvn:test.pkg/sub1/1.2.3'

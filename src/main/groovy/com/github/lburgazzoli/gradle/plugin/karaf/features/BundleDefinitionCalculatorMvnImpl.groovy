@@ -24,6 +24,7 @@ import org.gradle.api.artifacts.result.DependencyResult
 import org.gradle.api.artifacts.result.ResolvedComponentResult
 import org.gradle.api.artifacts.result.ResolvedDependencyResult
 import org.gradle.api.artifacts.result.UnresolvedDependencyResult
+import org.gradle.api.internal.artifacts.result.DefaultResolvedComponentResult
 import org.gradle.api.internal.artifacts.DefaultModuleVersionIdentifier
 import org.gradle.api.tasks.bundling.Jar
 
@@ -65,11 +66,12 @@ public class BundleDefinitionCalculatorMvnImpl implements BundleDefinitionCalcul
 		//To exclude transitive dependencies we have temporary orderedDependencyMap
 		LinkedHashMap<ModuleVersionIdentifier,ResolvedComponentResult> finalOrderedDependencyMap = new LinkedHashMap<ModuleVersionIdentifier,ResolvedComponentResult>()
 		finalOrderedDependencyMap.putAll(orderedDependencyMap)
-		Set<ModuleVersionIdentifier> projectIdentifiers = new HashSet<ModuleVersionIdentifier>()
+		Map<ModuleVersionIdentifier, ModuleVersionIdentifier> projectIdentifiersMap = new HashMap<ModuleVersionIdentifier, ModuleVersionIdentifier>()
 
 		feature.projectDescriptors.each { bundledProjectDescriptor ->
 			def bundledProject = bundledProjectDescriptor.project
-			feature.project.logger.debug("Processing project '${bundledProject.name}' for feature '${feature.name}' dependencies ${bundledProjectDescriptor.dependencies}")
+			String artifactId = bundledProjectDescriptor.artifactId ?: bundledProject.name
+			feature.project.logger.debug("Processing project '${bundledProject.name}' with artifactId '${artifactId}' for feature '${feature.name}' dependencies ${bundledProjectDescriptor.dependencies}")
             
 			collectDependencies( feature, bundledProjectDescriptor.dependencies.transitive ? finalOrderedDependencyMap : orderedDependencyMap, resolvedArtifactMap, bundledProject.configurations.runtime, extension, true )
 			ModuleVersionIdentifier projectVersionId = new DefaultModuleVersionIdentifier(
@@ -78,12 +80,12 @@ public class BundleDefinitionCalculatorMvnImpl implements BundleDefinitionCalcul
 				"${bundledProject.version}"
 			)
 			resolvedArtifactMap.put( projectVersionId, ( bundledProject.tasks.jar as Jar ).archivePath )
-			projectIdentifiers.add( projectVersionId )
+			projectIdentifiersMap.put( projectVersionId, new DefaultModuleVersionIdentifier("${bundledProject.group}", artifactId, "${bundledProject.version}") )
 		}
         
 		orderedDependencyMap.each { k, v ->
-			if ( projectIdentifiers.contains( k ) ) {
-				finalOrderedDependencyMap.put( k, v)
+			if ( projectIdentifiersMap.containsKey( k ) ) {
+				finalOrderedDependencyMap.put( k, new DefaultResolvedComponentResult(projectIdentifiersMap.get( k ), v.selectionReason, v.id) )
 			}
 		}
 

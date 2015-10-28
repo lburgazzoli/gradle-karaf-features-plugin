@@ -21,6 +21,7 @@ import org.gradle.api.artifacts.result.DependencyResult
 import org.gradle.api.artifacts.result.ResolvedComponentResult
 import org.gradle.api.artifacts.result.ResolvedDependencyResult
 import org.gradle.api.artifacts.result.UnresolvedDependencyResult
+import org.gradle.api.internal.artifacts.DefaultModuleVersionIdentifier
 
 import com.github.lburgazzoli.gradle.plugin.karaf.features.model.BundleInstructionDescriptor
 import com.github.lburgazzoli.gradle.plugin.karaf.features.model.FeatureDescriptor
@@ -82,7 +83,7 @@ class BundleDefinitionCalculatorObrImpl implements BundleDefinitionCalculator {
 		}
 
 		// add dependencies first
-		if ( !projectDescriptor.excludeTransitiveDependecies ) {
+		if ( projectDescriptor.dependencies.transitive ) {
 			for ( DependencyResult dependency : root.dependencies ) {
 				if ( dependency instanceof UnresolvedDependencyResult ) {
 					continue;
@@ -98,7 +99,14 @@ class BundleDefinitionCalculatorObrImpl implements BundleDefinitionCalculator {
 		
 
 		// then add the root one
-		moduleVersionIdentifiers.add( root.moduleVersion )
+		ModuleVersionIdentifier rootModuleVersion = root.moduleVersion
+		String artifactId = projectDescriptor.artifactId ?: rootModuleVersion.name
+		ModuleVersionIdentifier projectModuleVersion = new DefaultModuleVersionIdentifier(
+			"${rootModuleVersion.group}",
+			"${artifactId}",
+			"${rootModuleVersion.version}"
+		)
+		moduleVersionIdentifiers.add( projectModuleVersion )
 	}
 
 	static BundleInstructionDescriptor findBundleInstructions(ModuleVersionIdentifier dep, FeatureDescriptor feature) {

@@ -70,7 +70,17 @@ class FeatureDescriptor {
 	 */
 	def BundleInstructionDescriptor[] bundles
 
+	/**
+	 * List of dependency feature names. An easy way to specify dependencies, however properties are not supported
+	 *
+	 * @deprecated use dependencyFeatures property
+	 */
 	def String[] dependencyFeatureNames = []
+	
+	/**
+	 * List of feature dependencies. Support version and dependency properties.
+	 */
+	def FeatureDependencyDescriptor[] dependencyFeatures = []
 
 	private final KarafFeaturesTaskExtension extension
 
@@ -146,5 +156,18 @@ class FeatureDescriptor {
 	
 	public ProjectDescriptor[] getProjectDescriptors() {
 		return this.projectDescriptors != null ? this.projectDescriptors : []
+	}
+	
+	def dependency(String featureName) {
+		this.dependency(featureName, null)
+	}
+	
+	def dependency(String featureName, Closure closure) {
+		def featureDependencyDescriptor = new FeatureDependencyDescriptor(featureName)
+		if ( closure ) {
+			ConfigureUtil.configure( closure, featureDependencyDescriptor )
+		}
+		this.project.logger.debug("Add feature dependency '${featureName}' to feature '${this.name}'");
+		this.dependencyFeatures += featureDependencyDescriptor
 	}
 }

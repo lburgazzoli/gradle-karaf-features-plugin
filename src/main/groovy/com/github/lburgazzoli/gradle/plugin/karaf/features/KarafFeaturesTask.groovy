@@ -29,7 +29,7 @@ import groovy.xml.MarkupBuilder
  * @author Sergey Nekhviadovich
  */
 class KarafFeaturesTask extends DefaultTask {
-    public static final String FEATURES_XMLNS = 'http://karaf.apache.org/xmlns/features/v1.2.0'
+    public static final String FEATURES_XMLNS_PREFIX = 'http://karaf.apache.org/xmlns/features/v'
 
     public KarafFeaturesTask() {
         super();
@@ -49,8 +49,10 @@ class KarafFeaturesTask extends DefaultTask {
     def generateFeatures() {
         def writer = new StringWriter()
         def builder = new MarkupBuilder(writer)
-
-        builder.features(xmlns:FEATURES_XMLNS, name: extension.featuresName) {
+        
+        def (majorXsdVersion, minorXsdVersion) = extension.featuresXsdVersion.split('\\.').collect { it.toInteger()}
+        
+        builder.features(xmlns:FEATURES_XMLNS_PREFIX + extension.featuresXsdVersion, name: extension.featuresName) {
             extension.repositories.each {
                 builder.repository( it )
             }
@@ -70,6 +72,18 @@ class KarafFeaturesTask extends DefaultTask {
                             builder.feature( it )
                         }
                     }
+                    if ( feature.dependencyFeatures != null ) {
+                        feature.dependencyFeatures.each {
+                            Map attributeMap = new HashMap()
+                            if ( it.version != null ) {
+                                attributeMap.put( "version", it.version )
+                            }
+                            if ( it.dependency && ( majorXsdVersion > 1 || ( majorXsdVersion == 1 && minorXsdVersion >= 3 ) ) ) {
+                                attributeMap.put( "dependency", true )
+                            }
+                            builder.feature( attributeMap, it.name )
+                        }
+                    }
 
                     // Render bundle dependencies
                     extension.getLogger().debug("Calculate bundle definitions for feature '${feature.name}'")
@@ -78,8 +92,9 @@ class KarafFeaturesTask extends DefaultTask {
                             extension,
                             extraBundles
                     )
-                    Map attributeMap = new HashMap()
+                    
                     bundles.each { bundle->
+                        Map attributeMap = new HashMap()
                         if ( bundle.dependency != null ) {
                             attributeMap.put( "dependency", bundle.dependency )
                         }

@@ -42,6 +42,13 @@ class KarafFeaturesTaskExtension {
      * name of the project to which the plugin is attached.
      */
     def featuresName
+    
+    /**
+     * Version of the xsd for target feature.xml file. Default is "1.2.0"
+     * From version 1.3.0 dependency feature attribute is supported
+     * @see https://karaf.apache.org/xmlns/features/v1.2.0
+     */
+    def String featuresXsdVersion = "1.2.0"
 
     /**
      * The output file

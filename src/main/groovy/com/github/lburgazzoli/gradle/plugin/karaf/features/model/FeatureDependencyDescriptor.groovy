@@ -18,6 +18,28 @@ package com.github.lburgazzoli.gradle.plugin.karaf.features.model
 /**
  *
  * @author Steve Ebersole
+ * @author Sergey Nekhviadovich
  */
 class FeatureDependencyDescriptor {
+	/**
+	 * Dependency feature name
+	 */
+	def String name
+
+	/**
+	 * Dependency feature version, will be skipped if unset
+	 */
+	def String version
+
+	/**
+	 * Dependency feature dependency flag. Available only for karaf 4+ and feature xsd version 1.3.0+
+	 */
+	def boolean dependency = false
+	
+	FeatureDependencyDescriptor() {
+	}
+	
+	FeatureDependencyDescriptor(String featureName) {
+	  this.name = featureName
+	}
 }

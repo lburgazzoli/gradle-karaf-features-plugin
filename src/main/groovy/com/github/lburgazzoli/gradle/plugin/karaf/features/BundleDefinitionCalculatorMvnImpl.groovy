@@ -123,7 +123,7 @@ public class BundleDefinitionCalculatorMvnImpl implements BundleDefinitionCalcul
 			Configuration configuration,
 			KarafFeaturesTaskExtension extension,
 			boolean includeRoot) {
-		collectOrderedDependencies( feature, orderedDependencyMap, configuration.incoming.resolutionResult.root, extension, includeRoot )
+		collectOrderedDependencies( feature, orderedDependencyMap, configuration.incoming.resolutionResult.root, extension, includeRoot, new HashSet() )
 
 		configuration.resolvedConfiguration.resolvedArtifacts.each {
 			feature.project.logger.debug("Collect dependencies for feature '${feature.name}': add module id '${it.moduleVersion.id}'")
@@ -144,11 +144,17 @@ public class BundleDefinitionCalculatorMvnImpl implements BundleDefinitionCalcul
 			LinkedHashMap<ModuleVersionIdentifier,ResolvedComponentResult> orderedDependencyMap,
 			ResolvedComponentResult resolvedComponentResult,
 			KarafFeaturesTaskExtension extension,
-			boolean includeResolvedComponentResult) {
-
+			boolean includeResolvedComponentResult,
+			Set processedComponents) {
+            
+		feature.project.logger.debug("Processing dependency '${resolvedComponentResult}' for feature '${feature.name}'")
 		final BundleInstructionDescriptor bundleInstructions = findBundleInstructions( resolvedComponentResult, feature )
 		if ( bundleInstructions != null && !bundleInstructions.include ) {
 			return;
+		}
+        
+		if (processedComponents.contains(resolvedComponentResult.moduleVersion)) {
+			return
 		}
 
 		// add dependencies first
@@ -156,8 +162,9 @@ public class BundleDefinitionCalculatorMvnImpl implements BundleDefinitionCalcul
 			if ( dependencyResult instanceof UnresolvedDependencyResult ) {
 				continue;
 			}
+			processedComponents.add(resolvedComponentResult.moduleVersion)
 
-			collectOrderedDependencies( feature, orderedDependencyMap, ( (ResolvedDependencyResult) dependencyResult ).selected, extension, true )
+			collectOrderedDependencies( feature, orderedDependencyMap, ( (ResolvedDependencyResult) dependencyResult ).selected, extension, true, processedComponents )
 		}
 
 		// then add this one (if param says to)

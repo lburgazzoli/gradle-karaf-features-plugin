@@ -10,7 +10,7 @@ buildscript {
     jcenter()
   }
   dependencies {
-    classpath 'com.github.lburgazzoli:gradle-karaf-features-plugin:2.7.0'
+    classpath 'com.github.lburgazzoli:gradle-karaf-features-plugin:2.7.2'
   }
 }
 
@@ -41,9 +41,9 @@ karafFeatures {
       project(':subproject1')
       project(':subproject2') {
         dependencies {
-          transitive = false //true by default
+          transitive = false                  //true by default
         }
-        artifactId = "newSubProject2" // project name by default
+        artifactId = "newSubProject2"         // project name by default
       }
     }
     testFeature {
@@ -60,7 +60,7 @@ To generate feature just run
 gradle generateKarafFeatures
 ```
 
-generated file 'build/karafFeatures/project1-1.0.0-karaf.xml' will look like below  
+generated file `build/karafFeatures/project1-1.0.0-karaf.xml` will look like below  
 ```xml
 <features xmlns='http://karaf.apache.org/xmlns/features/v1.2.0' name='featuresName'>
   <repository>mvn:group/dependent-feature/1.2.3/xml/features</repository>
@@ -84,25 +84,26 @@ Karaf 4 features xsd v1.3.0 partially supported
 ```
 
 To generate this stuff  
-1. Set featuresXsdVersion to 1.3.0
-2. Use dependency with configuration closure
+1. Set featuresXsdVersion to 1.3.0  
+2. Use dependency with configuration closure  
 ```
 karafFeatures {
   featuresName = 'featuresName'
   featuresXsdVersion = '1.3.0'
+  featuresXmlFile = file("${project.buildDir}/karafFeatures/${project.name}-feature.xml")
   features {
     mainFeature {
       name = 'main-feature-name'
       dependency('dependent-feature') {
-        dependency = true //false by default
-        version = "1.2.3" //empty by default
+        dependency = true              //false by default
+        version = "1.2.3"              //empty by default
       }
     }
   }
 }
 ```
 
-generated file 'build/karafFeatures/project1-1.0.0-karaf.xml' will look like below  
+generated file `build/karafFeatures/project1-feature.xml` will look like below  
 ```xml
 <features xmlns='http://karaf.apache.org/xmlns/features/v1.2.0' name='featuresName'>
   <feature name='main-feature-name' version='1.0.0'>

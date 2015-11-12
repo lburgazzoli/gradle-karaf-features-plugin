@@ -105,7 +105,7 @@ karafFeatures {
 
 generated file `build/karafFeatures/project1-feature.xml` will look like below  
 ```xml
-<features xmlns='http://karaf.apache.org/xmlns/features/v1.2.0' name='featuresName'>
+<features xmlns='http://karaf.apache.org/xmlns/features/v1.3.0' name='featuresName'>
   <feature name='main-feature-name' version='1.0.0'>
     <feature version="1.2.3" dependency="true">dependent-feature</feature>
   </feature>

@@ -7,15 +7,14 @@ buildscript {
         mavenCentral()
         mavenLocal()
         jcenter()
-        maven { url "https://plugins.gradle.org/m2/" }
+        //maven { url "https://plugins.gradle.org/m2/" }
     }
 
     dependencies {
         classpath 'com.bmuschko:gradle-nexus-plugin:2.3.1'
         classpath 'org.hibernate.build.gradle:gradle-maven-publish-auth:2.0.1'
         classpath 'io.codearte.gradle.nexus:gradle-nexus-staging-plugin:0.5.3'
-        classpath 'net.researchgate:gradle-release:2.1.2'
-        classpath 'com.gradle.publish:plugin-publish-plugin:0.9.0'
+        classpath 'net.researchgate:gradle-release:2.3.4'
     }
 }
 
@@ -29,7 +28,6 @@ apply plugin: 'maven'
 apply plugin: 'com.bmuschko.nexus'
 apply plugin: 'io.codearte.nexus-staging'
 apply plugin: 'net.researchgate.release'
-apply plugin: 'com.gradle.plugin-publish'
 
 // Added this (and publication def) to be able to publish to "maven local"
 // and the jboss snapshot repo for testing, since I do not have rights to
@@ -81,7 +79,7 @@ jar {
     manifest {
         attributes['Implementation-Title'   ] = "${group}.${project.name}-${project.version}"
         attributes['Implementation-Version' ] = project.version
-        attributes['Implementation-Vendor'  ] = 'lb'
+        attributes['Implementation-Vendor'  ] = 'Luca Burgazzoli'
     }
 }
 
@@ -129,6 +127,10 @@ modifyPom {
                 id 'sebersole'
                 name 'Steve Ebersole'
             }
+            developer {
+                id 'SOVALINUX'
+                name 'Sergey Nekhviadovich'
+            }
         }
     }
 }
@@ -146,21 +148,6 @@ publishing {
         }
     }
 }
-
-pluginBundle {
-    website     = 'https://github.com/lburgazzoli/gradle-karaf-features-plugin'
-    vcsUrl      = 'https://github.com/lburgazzoli/gradle-karaf-features-plugin'
-    description = project.description
-    tags        = [ 'osgi', 'karaf' ]
-
-    plugins {
-        karafFeaturesPlugin {
-            id          = 'com.github.lburgazzoli.karaf.features'
-            displayName = 'Gradle Karaf Features Plugin'
-        }
-    }
-}
-
 
 afterReleaseBuild.dependsOn uploadArchives
 

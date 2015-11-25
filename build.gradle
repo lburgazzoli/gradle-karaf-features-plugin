@@ -44,11 +44,11 @@ group               = 'com.github.lburgazzoli'
 description         = 'A gradle plugin to create Karaf features'
 
 ext {
-    gradleVersion    = '2.7'
+    gradleVersion    = '2.9'
     gradleScriptDir  = "${rootProject.projectDir}/gradle"
     isReleaseVersion = !version.endsWith("SNAPSHOT")
     gitRoot          = "https://github.com/lburgazzoli"
-    gitProject       = "https://github.com/lburgazzoli/lb-gradle-plugins"
+    gitProject       = "https://github.com/lburgazzoli/gradle-karaf-features-plugin"
 
     if(!project.hasProperty('nexusUsername') && !project.hasProperty('nexusPassword')) {
         nexusUsername = "$System.env.CI_DEPLOY_USERNAME"
@@ -56,7 +56,7 @@ ext {
     }
 
     versions = [
-        spock : '1.0-groovy-2.3'
+        spock : '1.0-groovy-2.4'
     ]
 }
 

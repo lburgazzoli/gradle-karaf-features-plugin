@@ -1,0 +1,33 @@
+
+buildscript {
+    repositories {
+        mavenCentral()
+        mavenLocal()
+        jcenter()
+    }
+
+    dependencies {
+        classpath 'org.hibernate.build.gradle:gradle-maven-publish-auth:2.0.1'
+    }
+}
+
+// Added this (and publication def) to be able to publish to "maven local"
+// and the jboss snapshot repo for testing, since I do not have rights to
+// publish to your snapshot server
+//      - Sincerely, Steve :)
+apply plugin: "maven-publish"
+apply plugin: 'maven-publish-auth'
+
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            from components.java
+        }
+    }
+    repositories {
+        maven {
+            name 'jboss-snapshots-repository'
+            url  'https://repository.jboss.org/nexus/content/repositories/snapshots'
+        }
+    }
+}

@@ -128,10 +128,7 @@ modifyPom {
                 id 'sebersole'
                 name 'Steve Ebersole'
             }
-        }
-
-        contributors {
-            contributor {
+            developer {
                 id 'SOVALINUX'
                 name 'Sergey Nekhviadovich'
             }

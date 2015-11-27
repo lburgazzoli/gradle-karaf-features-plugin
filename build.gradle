@@ -38,7 +38,7 @@ description         = 'A gradle plugin to create Karaf features'
 ext {
     gradleVersion    = '2.9'
     gradleScriptDir  = "${rootProject.projectDir}/gradle"
-    gradlePluginId   = "com.github.lburgazzoli.camel"
+    gradlePluginId   = "com.github.lburgazzoli.karaf.features"
     gradlePluginTags = [ 'camel' ]
     isReleaseVersion = !version.endsWith("SNAPSHOT")
     gitRoot          = "https://github.com/lburgazzoli"

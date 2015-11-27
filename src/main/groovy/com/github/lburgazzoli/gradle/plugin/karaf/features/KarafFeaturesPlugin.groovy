@@ -62,7 +62,7 @@ class KarafFeaturesPlugin implements Plugin<Project> {
 
                 extension.features.each { feature ->
                     project.logger.debug("Karaf feature '${feature.name}' processing, projects '${feature.projectDescriptors}'");
-                    feature.bundleDependencies.each {
+                    feature.configurations.each {
                         task.inputs.files(it)
                         task.dependsOn(it)
                     }

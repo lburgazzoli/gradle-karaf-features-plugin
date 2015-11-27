@@ -37,7 +37,7 @@ class ProjectDescriptor {
 	 * Project to be included in this feature.  We will pick up
 	 * all of its {@code configurations.runtime} dependencies and
 	 * add it as bundle. This project runtime configurations are
-	 * considered additive to the {@link #bundleDependencies} configurations
+	 * considered additive to the {@link #configurations} configurations
 	 */
 	def Project project
 

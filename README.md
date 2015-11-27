@@ -5,7 +5,7 @@ How to use
 ============================
 build.gradle
 ```
-// Fro Gradle 2.1+
+// Gradle 2.1+
 plugins {
   id "com.github.lburgazzoli.karaf.features" version "2.9.1"
 }

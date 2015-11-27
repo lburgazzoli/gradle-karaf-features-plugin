@@ -30,7 +30,6 @@ import org.gradle.api.tasks.bundling.Jar
 
 import com.github.lburgazzoli.gradle.plugin.karaf.features.model.BundleInstructionDescriptor
 import com.github.lburgazzoli.gradle.plugin.karaf.features.model.FeatureDescriptor
-import com.github.lburgazzoli.gradle.plugin.karaf.features.model.ProjectDescriptor
 
 /**
  * @author Steve Ebersole
@@ -58,7 +57,7 @@ public class BundleDefinitionCalculatorMvnImpl implements BundleDefinitionCalcul
 
 		collectDependencies( feature, orderedDependencyMap, resolvedArtifactMap, extraBundles, extension, false )
 
-		feature.bundleDependencies.each {
+		feature.configurations.each {
 			collectDependencies( feature, orderedDependencyMap, resolvedArtifactMap, it, extension, false )
 		}
 		//A bit tricky approach to handle excluding transitive dependencies:

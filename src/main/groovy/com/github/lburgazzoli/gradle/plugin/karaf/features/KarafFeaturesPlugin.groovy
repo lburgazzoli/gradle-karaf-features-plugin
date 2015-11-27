@@ -14,13 +14,10 @@
  * limitations under the License.
  */
 package com.github.lburgazzoli.gradle.plugin.karaf.features
-
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.Task
 import org.gradle.api.artifacts.Configuration
-import org.gradle.api.logging.Logger
-
 /**
  * Plugin for integrating Karaf features generation into a build.  Execution is configured
  * through the KarafFeaturesGenTaskExtension DSL extension registered under {@code karafFeatures}
@@ -44,43 +41,47 @@ class KarafFeaturesPlugin implements Plugin<Project> {
 
         project.afterEvaluate {
             if ( extension.features.empty ) {
+                project.logger.warn("Karaf features plugin: features empty for project '${project.name}'");
+
                 // no features were added, so do the "default" bit...
-                project.logger.debug("Karaf features plugin: features empty for project '${project.name}', adding default");
+                /* TODO: fix
+                project.logger.warn("Karaf features plugin: features empty for project '${project.name}', adding default");
                 extension.features {
                     feature {
                         name = project.name
-                        projects = [project]
+                        //projects = [project]
                         project.subprojects.each {
                             project.logger.debug("Karaf features plugin: adding default feature ${project.name}, it = ${it}");
-                            project( it )
+                            //project( it )
                         }
                     }
                 }
-            }
+                */
+            } else {
+                task.inputs.files(configuration)
 
-            task.inputs.files( configuration )
+                extension.features.each { feature ->
+                    project.logger.debug("Karaf feature '${feature.name}' processing, projects '${feature.projectDescriptors}'");
+                    feature.bundleDependencies.each {
+                        task.inputs.files(it)
+                        task.dependsOn(it)
+                    }
 
-            extension.features.each { feature ->
-                project.logger.debug("Karaf feature '${feature.name}' processing, projects '${feature.projectDescriptors}'");
-                feature.bundleDependencies.each {
-                    task.inputs.files( it )
-                    task.dependsOn( it )
+                    feature.projectDescriptors.each { bundleProjectDescriptor ->
+                        // we need access the jar for any project we generate feature for
+                        def bundleProject = bundleProjectDescriptor.project
+                        project.logger.debug("Karaf feature '${feature.name}' processing project '${bundleProject.name}'");
+                        task.dependsOn bundleProject.tasks.jar
+
+                        // we also want our inputs to be based on the runtime configuration
+                        task.inputs.files(bundleProject.configurations.runtime)
+                    }
                 }
 
-                feature.projectDescriptors.each { bundleProjectDescriptor ->
-                    // we need access the jar for any project we generate feature for
-                    def bundleProject = bundleProjectDescriptor.project
-                    project.logger.debug("Karaf feature '${feature.name}' processing project '${bundleProject.name}'");
-                    task.dependsOn bundleProject.tasks.jar
-
-                    // we also want our inputs to be based on the runtime configuration
-                    task.inputs.files( bundleProject.configurations.runtime )
+                // if there is an output file, add that as an output
+                if (extension.outputFile != null) {
+                    task.outputs.file(extension.outputFile)
                 }
-            }
-
-            // if there is an output file, add that as an output
-            if ( extension.featuresXmlFile != null ) {
-                task.outputs.file( extension.featuresXmlFile )
             }
 
         }

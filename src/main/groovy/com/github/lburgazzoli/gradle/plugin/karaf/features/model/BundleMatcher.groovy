@@ -19,7 +19,6 @@ import org.gradle.api.IllegalDependencyNotation
 import org.gradle.api.artifacts.ModuleVersionIdentifier
 import org.gradle.api.artifacts.result.ResolvedComponentResult
 import org.gradle.api.internal.artifacts.DefaultModuleVersionIdentifier
-import org.gradle.util.GUtil
 
 /**
  * @author Steve Ebersole
@@ -30,8 +29,8 @@ public class BundleMatcher {
 	def String name
 	def String version
 
-	public boolean matches(ResolvedComponentResult check) {
-		return matches( check.moduleVersion )
+	public boolean matches(ResolvedComponentResult resolvedComponent) {
+		return matches( resolvedComponent.moduleVersion )
 	}
 
 	public boolean matches(ModuleVersionIdentifier check) {
@@ -57,5 +56,10 @@ public class BundleMatcher {
             name    : notationParts.length >= 2 ? notationParts[1] :  null,
             version : notationParts.length == 3 ? notationParts[2] :  null,
         ] as BundleMatcher
+	}
+
+	@Override
+	public String toString() {
+		return "BundleMatcher[ group:${group}, name:${name}, version:${version} ]"
 	}
 }

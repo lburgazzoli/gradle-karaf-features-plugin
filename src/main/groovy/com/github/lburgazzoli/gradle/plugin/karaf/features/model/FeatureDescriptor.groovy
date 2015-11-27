@@ -48,39 +48,32 @@ class FeatureDescriptor {
 	/**
 	 * The project from which the plugin is instantiated
 	 */
-	def Project project
+	final def Project project
 
 	/**
 	 * Any projects to be included in this feature.  We will pick up
 	 * all of their {@code configurations.runtime} dependencies and
 	 * add them as bundles.  These project runtime configurations are
-	 * considered additive to the {@link #bundleDependencies} configurations
+	 * considered additive to the {@link #configurations} configurations
 	 */
-	def ProjectDescriptor[] projectDescriptors
+	protected def ProjectDescriptor[] projectDescriptors
 
 	/**
 	 * Any Configurations containing dependencies to apply as bundles
 	 * to this feature.  These configurations are considered additive to the
 	 * project runtime configurations from {@link #projectDescriptors}
 	 */
-	def Configuration[] bundleDependencies
+	protected def List<Configuration> configurations
 
 	/**
 	 * Any specific bundle instructions to apply within this feature.
 	 */
-	def BundleInstructionDescriptor[] bundles
-
-	/**
-	 * List of dependency feature names. An easy way to specify dependencies, however properties are not supported
-	 *
-	 * @deprecated use dependencyFeatures property
-	 */
-	def String[] dependencyFeatureNames = []
+	protected def BundleInstructionDescriptor[] bundles
 	
 	/**
 	 * List of feature dependencies. Support version and dependency properties.
 	 */
-	def FeatureDependencyDescriptor[] dependencyFeatures = []
+	def FeatureDependencyDescriptor[] dependencyFeatures;
 
 	private final KarafFeaturesTaskExtension extension
 
@@ -89,16 +82,18 @@ class FeatureDescriptor {
 		this.name = name
 		this.version = project.version
 		this.project = project
+        this.dependencyFeatures = []
+        this.configurations = []
 	}
 
 	def project(String projectName, Closure closure) {
-		this.project.getAllprojects().find {it.name == projectName || ":${it.name}" == projectName }.each { project ->
+		this.project.allprojects.find {it.name == projectName || ":${it.name}" == projectName }.each { project ->
 			def projectDescriptor = new ProjectDescriptor(project)
 			if ( closure ) {
 				ConfigureUtil.configure( closure, projectDescriptor )
 			}
 			this.project.logger.debug("Add project '${project.name}' to feature '${this.name}'");
-			if ( this.projectDescriptors == null ) {
+			if ( this.projectDescriptors) {
 				this.projectDescriptors = [ projectDescriptor ]
 			} else {
 				this.projectDescriptors += projectDescriptor
@@ -133,6 +128,8 @@ class FeatureDescriptor {
 	}
 
 	def bundle(String pattern, Closure closure) {
+        this.project.logger.debug("Add bundle '${pattern}' to feature '${this.name}'");
+
 		def descriptor = new BundleInstructionDescriptor(BundleMatcher.from(pattern))
 		ConfigureUtil.configure( closure, descriptor )
 
@@ -155,19 +152,47 @@ class FeatureDescriptor {
 	}
 	
 	public ProjectDescriptor[] getProjectDescriptors() {
-		return this.projectDescriptors != null ? this.projectDescriptors : []
+		return this.projectDescriptors != null ? this.projectDescriptors : [ new ProjectDescriptor(project) ]
+	}
+
+    def features(Collection<String> featureNames) {
+        featureNames.each {
+            this.feature(it, null)
+        }
+    }
+
+    def feature(FeatureDescriptor feature) {
+        this.feature(feature.name, null)
+    }
+
+    def feature(FeatureDescriptor feature, Closure closure) {
+        this.feature(feature.name, closure)
+    }
+	
+	def feature(String featureName) {
+		this.feature(featureName, null)
 	}
 	
-	def dependency(String featureName) {
-		this.dependency(featureName, null)
-	}
-	
-	def dependency(String featureName, Closure closure) {
+	def feature(String featureName, Closure closure) {
 		def featureDependencyDescriptor = new FeatureDependencyDescriptor(featureName)
 		if ( closure ) {
 			ConfigureUtil.configure( closure, featureDependencyDescriptor )
 		}
+
 		this.project.logger.debug("Add feature dependency '${featureName}' to feature '${this.name}'");
 		this.dependencyFeatures += featureDependencyDescriptor
 	}
+
+    def configuration(Configuration configuration) {
+        if(configuration) {
+            this.configurations.add(configuration)
+        }
+    }
+
+    def configuration(String configurationName) {
+        Configuration configuration = this.project.configurations.getByName(configurationName);
+        if(configuration) {
+            this.configurations.add(configuration)
+        }
+    }
 }

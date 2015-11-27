@@ -44,7 +44,7 @@ class BundleDefinitionCalculatorObrImpl implements BundleDefinitionCalculator {
 			Configuration extraBundles) {
 		LinkedHashSet<ModuleVersionIdentifier> dependencies = []
 		collectDependencies( feature, dependencies, extraBundles, null )
-		feature.bundleDependencies.each {
+		feature.configurations.each {
 			collectDependencies( feature, dependencies, it, null )
 		}
 		feature.projectDescriptors.each { bundledProjectDescriptor ->

@@ -14,9 +14,16 @@ group = 'com.github'
 version = '1.0.0'
 //name is 'project1'
 
+configuration {
+    myAdditionalDepList 
+}
+
 project(':subproject1') {
   dependencies {
     compile 'commons-lang:commons-lang:2.6'
+    myAdditionalDepList 'com.google.guava:guava:18.0'        
+    myAdditionalDepList "com.squareup.retrofit:retrofit:1.9.0"
+    myAdditionalDepList "com.squareup.retrofit:converter-jackson:1.9.0"
   }
 }
 
@@ -27,13 +34,15 @@ project(':subproject2') {
 }
 
 karafFeatures {
-  featuresName = 'featuresName'
+  name = 'featuresName'
+  
   features {
     mainFeature {
       name = 'main-feature-name'
       repositories = ['mvn:group/dependent-feature/1.2.3/xml/features']
       description = 'Some useful description'
-      dependency('dependent-feature')
+      feature('dependent-feature')
+      configuration(project.configurations.myAdditionalDepList)
       project(':subproject1')
       project(':subproject2') {
         dependencies {
@@ -41,11 +50,15 @@ karafFeatures {
         }
         artifactId = "newSubProject2"         // project name by default
       }
+      
+      bundle('com.squareup.retrofit:converter-jackson') {
+        include = false
+      }
     }
     testFeature {
       name = 'test-feature-name'
       description = 'Another useful description'
-      dependencyFeatureNames = [karafFeatures.features.mainFeature.name]
+      feature(karafFeatures.features.mainFeature)
     }
   }
 }
@@ -63,6 +76,7 @@ generated file `build/karafFeatures/project1-1.0.0-karaf.xml` will look like bel
   <feature name='main-feature-name' description='Some useful description' version='1.0.0'>
     <feature>dependent-feature</feature>
     <bundle>mvn:commons-lang/commons-lang/2.6</bundle>
+    <bundle>wrap:mvn:com.squareup.retrofit/retrofit/1.9.0</bundle>
     <bundle>mvn:com.github/subproject1/1.0.0</bundle>
     <bundle>mvn:com.github/newSubProject2/1.0.0</bundle>
   </feature>
@@ -84,9 +98,9 @@ To generate this stuff
 2. Use dependency with configuration closure  
 ```
 karafFeatures {
-  featuresName = 'featuresName'
-  featuresXsdVersion = '1.3.0'
-  featuresXmlFile = file("${project.buildDir}/karafFeatures/${project.name}-feature.xml")
+  name = 'featuresName'
+  xsdVersion = '1.3.0'
+  outputFile = file("${project.buildDir}/karafFeatures/${project.name}-feature.xml")
   features {
     mainFeature {
       name = 'main-feature-name'

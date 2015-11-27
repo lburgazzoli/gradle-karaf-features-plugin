@@ -15,11 +15,10 @@
  */
 package com.github.lburgazzoli.gradle.plugin.karaf.features
 
+import groovy.xml.MarkupBuilder
 import org.gradle.api.DefaultTask
 import org.gradle.api.artifacts.Configuration
 import org.gradle.api.tasks.TaskAction
-
-import groovy.xml.MarkupBuilder
 
 /**
  * The Gradle task to perform generation of a Karaf features repository file (XML or kar)
@@ -31,6 +30,9 @@ import groovy.xml.MarkupBuilder
 class KarafFeaturesTask extends DefaultTask {
     public static final String FEATURES_XMLNS_PREFIX = 'http://karaf.apache.org/xmlns/features/v'
 
+    private KarafFeaturesTaskExtension extension_;
+    private Configuration extraBundles_;
+
     public KarafFeaturesTask() {
         super();
     }
@@ -38,51 +40,43 @@ class KarafFeaturesTask extends DefaultTask {
     @TaskAction
     def generateFeaturesFile() {
         project.logger.debug("Karaf features task start");
-        // write out a features repository xml.
-        extension.featuresXmlFile.parentFile.mkdirs()
 
-        def out = new BufferedWriter( new FileWriter( extension.featuresXmlFile ) )
-        out.write(generateFeatures())
-        out.close()
+        if(extension.outputFile != null) {
+            // write out a features repository xml.
+            extension.outputFile.parentFile.mkdirs()
+
+            def out = new BufferedWriter(new FileWriter(extension.outputFile))
+            out.write(generateFeatures())
+            out.close()
+        } else {
+            println "\n${generateFeatures()}\n"
+        }
     }
 
-    def generateFeatures() {
+    protected def generateFeatures() {
         def writer = new StringWriter()
+
         def builder = new MarkupBuilder(writer)
+        builder.setOmitNullAttributes(true)
         
-        def (majorXsdVersion, minorXsdVersion) = extension.featuresXsdVersion.split('\\.').collect { it.toInteger()}
-        
-        builder.features(xmlns:FEATURES_XMLNS_PREFIX + extension.featuresXsdVersion, name: extension.featuresName) {
+        def (majXsdVer, minXsdVer) = extension.xsdVersion.split('\\.').collect { it.toInteger() }
+        def xsdVer13 = majXsdVer > 1 || ( majXsdVer == 1 && minXsdVer >= 3 );
+
+        builder.features(xmlns:FEATURES_XMLNS_PREFIX + extension.xsdVersion, name: extension.name) {
             extension.repositories.each {
                 builder.repository( it )
             }
 
-            extension.features.each { feature->
-                Map featureAttributeMap = new HashMap()
-                featureAttributeMap.put( "name", feature.name )
-                featureAttributeMap.put( "version", feature.version )
-                if ( feature.description ) {
-                    featureAttributeMap.put( "description", feature.description )
-                }
-
-                builder.feature( featureAttributeMap ) {
-                    // Render feature dependencies
-                    if ( feature.dependencyFeatureNames != null ) {
-                        feature.dependencyFeatureNames.each {
-                            builder.feature( it )
-                        }
-                    }
-                    if ( feature.dependencyFeatures != null ) {
-                        feature.dependencyFeatures.each {
-                            Map attributeMap = new HashMap()
-                            if ( it.version != null ) {
-                                attributeMap.put( "version", it.version )
-                            }
-                            if ( it.dependency && ( majorXsdVersion > 1 || ( majorXsdVersion == 1 && minorXsdVersion >= 3 ) ) ) {
-                                attributeMap.put( "dependency", true )
-                            }
-                            builder.feature( attributeMap, it.name )
-                        }
+            extension.features.each { feature ->
+                builder.feature(name: feature.name, version: feature.version, description: feature.description) {
+                    feature.dependencyFeatures.each {
+                        builder.feature(
+                            [
+                                version:  it.version,
+                                dependency: (it.dependency && xsdVer13) ? true : null
+                            ],
+                            it.name
+                        )
                     }
 
                     // Render bundle dependencies
@@ -93,19 +87,14 @@ class KarafFeaturesTask extends DefaultTask {
                             extraBundles
                     )
                     
-                    bundles.each { bundle->
-                        Map attributeMap = new HashMap()
-                        if ( bundle.dependency != null ) {
-                            attributeMap.put( "dependency", bundle.dependency )
-                        }
-                        if ( bundle.startLevel != null ) {
-                            attributeMap.put( "start-level", bundle.startLevel )
-                        }
-
-                        builder.bundle( attributeMap, bundle.url )
-
-                        // for next pass
-                        attributeMap.clear()
+                    bundles.each { bundle ->
+                        builder.bundle(
+                            [
+                                'dependency': bundle.dependency,
+                                'start-level': bundle.startLevel
+                            ],
+                            bundle.url
+                        )
                     }
                 }
             }
@@ -114,18 +103,15 @@ class KarafFeaturesTask extends DefaultTask {
         return writer.toString()
     }
 
-    KarafFeaturesTaskExtension extension_;
-
     def KarafFeaturesTaskExtension getExtension() {
         // Don't keep looking it up...
         if ( extension_ == null ) {
             extension_ = project.extensions.findByName( KarafFeaturesPlugin.EXTENSION_NAME ) as KarafFeaturesTaskExtension
         }
+
         return extension_;
     }
 
-
-    Configuration extraBundles_;
 
     def getExtraBundles() {
         // Don't keep looking it up...

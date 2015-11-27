@@ -15,20 +15,11 @@
  */
 package com.github.lburgazzoli.gradle.plugin.karaf.features
 
-import java.io.File;
-import java.util.LinkedHashMap;
-import java.util.Map;
-
-import org.gradle.api.artifacts.Configuration
-import org.gradle.api.artifacts.ModuleVersionIdentifier
+import org.gradle.api.artifacts.result.ComponentSelectionReason
 import org.gradle.api.artifacts.result.ResolvedComponentResult
 import org.gradle.api.internal.artifacts.DefaultModuleVersionIdentifier
-import org.gradle.api.artifacts.result.ComponentSelectionReason
 import org.gradle.api.tasks.bundling.Jar
 import org.gradle.testfixtures.ProjectBuilder
-
-import com.github.lburgazzoli.gradle.plugin.karaf.features.model.FeatureDescriptor;
-
 import spock.lang.Specification
 
 /**
@@ -57,9 +48,9 @@ class KarafFeaturesSpec extends Specification {
             def feature = features.create('myFeature')
             feature.name = 'karaf-features-simple-project'
             feature.description = 'feature-description'
-            feature.bundle {
-                match: [ group: 'com.squareup.retrofit', name: 'converter-jackson' ]
-                include: false
+            feature.configuration('myAdditionalDependencies')
+            feature.bundle('com.squareup.retrofit:converter-jackson') {
+                include = false
             }
 
             def featuresStr = task.generateFeatures()
@@ -71,6 +62,20 @@ class KarafFeaturesSpec extends Specification {
             featuresXml.feature.@name == 'karaf-features-simple-project'
             featuresXml.feature.@description == 'feature-description'
             featuresXml.feature.@version == '1.2.3'
+
+            featuresXml.feature.bundle.'**'.findAll {
+                    it.text().contains('mvn:commons-lang/commons-lang/2.6')
+                }.size() == 1
+            featuresXml.feature.bundle.'**'.findAll {
+                    it.text().contains('mvn:com.google.guava/guava/18.0')
+                }.size() == 1
+            featuresXml.feature.bundle.'**'.findAll {
+                    it.text().contains('mvn:com.squareup.retrofit/retrofit/1.9.0')
+                }.size() == 1
+            featuresXml.feature.bundle.'**'.findAll {
+                    it.text().contains('mvn:com.squareup.retrofit/converter-jackson/1.9.0')
+                }.size() == 0
+
     }
     
     def 'Test project dependencies DSL'() {
@@ -89,12 +94,13 @@ class KarafFeaturesSpec extends Specification {
             GroovyMock(BundleDefinitionCalculatorMvnImpl, global: true)
             
             BundleDefinitionCalculatorMvnImpl.hasOsgiManifestHeaders() >> true
-            BundleDefinitionCalculatorMvnImpl.collectDependencies(_, _, _, _, _, _) >> {feature, orderedDependencyMap, resolvedArtifactMap, configuration, extension, includeRoot ->
-                def mv = new DefaultModuleVersionIdentifier(subProject.group, subProject.name, subProject.version)
-                def result = Mock(ResolvedComponentResult)
-                result.getModuleVersion() >> mv
-                result.getSelectionReason() >> Mock(ComponentSelectionReason)
-                orderedDependencyMap.put(mv, result)
+            BundleDefinitionCalculatorMvnImpl.collectDependencies(_, _, _, _, _, _) >> {
+                feature, orderedDependencyMap, resolvedArtifactMap, configuration, extension, includeRoot ->
+                    def mv = new DefaultModuleVersionIdentifier(subProject.group, subProject.name, subProject.version)
+                    def result = Mock(ResolvedComponentResult)
+                    result.getModuleVersion() >> mv
+                    result.getSelectionReason() >> Mock(ComponentSelectionReason)
+                    orderedDependencyMap.put(mv, result)
             }
             BundleDefinitionCalculatorMvnImpl.baseMvnUrl(_) >> 'mvn:test.pkg/sub1/1.2.3'
             
@@ -143,8 +149,8 @@ class KarafFeaturesSpec extends Specification {
                 match: [ group: 'com.squareup.retrofit', name: 'converter-jackson' ]
                 include: false
             }
-            feature.dependency('dependencyFeatureName1')
-            feature.dependency('dependencyFeatureName2') {
+            feature.feature('dependencyFeatureName1')
+            feature.feature('dependencyFeatureName2') {
                 version = "5.6.7"
                 dependency = true
             }
@@ -174,13 +180,13 @@ class KarafFeaturesSpec extends Specification {
             def feature = features.create('myFeature')
             feature.name = 'karaf-features-simple-project'
             feature.description = 'feature-description'
-            getKarafFeaturesExtension(project).featuresXsdVersion = "1.3.0"
+            getKarafFeaturesExtension(project).xsdVersion = "1.3.0"
             feature.bundle {
                 match: [ group: 'com.squareup.retrofit', name: 'converter-jackson' ]
                 include: false
             }
-            feature.dependency('dependencyFeatureName1')
-            feature.dependency('dependencyFeatureName2') {
+            feature.feature('dependencyFeatureName1')
+            feature.feature('dependencyFeatureName2') {
                 version = "5.6.7"
                 dependency = true
             }
@@ -223,6 +229,10 @@ class KarafFeaturesSpec extends Specification {
             mavenCentral()
         }
 
+        project.configurations {
+            myAdditionalDependencies
+        }
+
         return project
     }
 
@@ -231,6 +241,8 @@ class KarafFeaturesSpec extends Specification {
             compile 'com.google.guava:guava:18.0'
             compile "com.squareup.retrofit:retrofit:1.9.0"
             compile "com.squareup.retrofit:converter-jackson:1.9.0"
+
+            myAdditionalDependencies "commons-lang:commons-lang:2.6"
         }
     }
 

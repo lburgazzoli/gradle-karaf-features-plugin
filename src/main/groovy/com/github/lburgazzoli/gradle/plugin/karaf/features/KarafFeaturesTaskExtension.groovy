@@ -35,49 +35,47 @@ class KarafFeaturesTaskExtension {
     /**
      * The strategy for handling bundle definitions.
      */
-    def BundleStrategy bundleStrategy = BundleStrategy.MVN
+    def BundleStrategy bundleStrategy
 
     /**
      * Name used for the {@code <features name="?"/>} attribute.  Default is to use the
      * name of the project to which the plugin is attached.
      */
-    def featuresName
+    def name
     
     /**
      * Version of the xsd for target feature.xml file. Default is "1.2.0"
      * From version 1.3.0 dependency feature attribute is supported
      * @see https://karaf.apache.org/xmlns/features/v1.2.0
      */
-    def String featuresXsdVersion = "1.2.0"
+    def String xsdVersion
 
     /**
      * The output file
      */
-    def File featuresXmlFile
+    def File outputFile
 
     /**
      * Define any {@code <repository/>} entries to be added to the features file.
      */
-    def Set<String> repositories = []
+    protected final def Set<String> repositories
 
     /**
      * User configuration of any {@code <feature/>} generations to occur.
      */
     final NamedDomainObjectContainer<FeatureDescriptor> features;
 
-    Logger getLogger() {
-        return project.logger
-    }
 
     KarafFeaturesTaskExtension(Project project) {
         this.project = project
-
-        this.featuresName = project.name
-        this.featuresXmlFile = project.file( "${project.buildDir}/karafFeatures/${project.name}-${project.version}-karaf.xml" )
+        this.name = project.name
+        this.bundleStrategy = BundleStrategy.MVN
+        this.xsdVersion = "1.2.0"
+        this.repositories = []
+        this.outputFile = project.file( "${project.buildDir}/karafFeatures/${project.name}-${project.version}-karaf.xml" )
 
         // Create a dynamic container for FeatureDescriptor definitions by the user
-        features = project.container( FeatureDescriptor, new FeatureDescriptorFactory( project, this ) )
-        
+        this.features = project.container( FeatureDescriptor, new FeatureDescriptorFactory( project, this ) )
     }
 
     boolean isPreferObrBundles() {
@@ -85,16 +83,23 @@ class KarafFeaturesTaskExtension {
     }
 
     void setPreferObrBundles(boolean preferObrBundles) {
-        if ( preferObrBundles ) {
-            bundleStrategy = BundleStrategy.OBR
-        }
-        else {
-            bundleStrategy = BundleStrategy.MVN
-        }
+        bundleStrategy = preferObrBundles ? BundleStrategy.OBR : BundleStrategy.MVN
+    }
+
+    def repository(String repository) {
+        this.repositories.add(repository)
+    }
+
+    def repositories(Collection<String> repositories) {
+        this.repositories.clear()
+        this.repositories.addAll(repositories)
     }
 
     def features(Closure closure) {
         features.configure( closure )
     }
 
+    Logger getLogger() {
+        return project.logger
+    }
 }

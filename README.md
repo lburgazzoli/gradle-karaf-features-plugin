@@ -5,13 +5,9 @@ How to use
 ============================
 build.gradle
 ```
-buildscript {
-  repositories {
-    jcenter()
-  }
-  dependencies {
-    classpath 'com.github.lburgazzoli:gradle-karaf-features-plugin:2.7.2'
-  }
+// Fro Gradle 2.1+
+plugins {
+  id "com.github.lburgazzoli.karaf.features" version "2.9.1"
 }
 
 group = 'com.github'

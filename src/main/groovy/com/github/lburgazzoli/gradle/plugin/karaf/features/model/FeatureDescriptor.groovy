@@ -151,7 +151,8 @@ class FeatureDescriptor {
 		}
 	}
 	
-	public ProjectDescriptor[] getProjectDescriptors() {
+	public ProjectDescriptor[] getProjectsDescriptors() {
+        this.project.logger.debug("Get project descriptors, this = ${projectDescriptors}");
 		return this.projectDescriptors != null ? this.projectDescriptors : [ new ProjectDescriptor(project) ]
 	}
 

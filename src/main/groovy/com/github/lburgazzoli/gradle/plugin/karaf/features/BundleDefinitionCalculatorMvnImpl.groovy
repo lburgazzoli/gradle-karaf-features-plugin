@@ -67,7 +67,7 @@ public class BundleDefinitionCalculatorMvnImpl implements BundleDefinitionCalcul
 		finalOrderedDependencyMap.putAll(orderedDependencyMap)
 		Map<ModuleVersionIdentifier, ModuleVersionIdentifier> projectIdentifiersMap = new HashMap<ModuleVersionIdentifier, ModuleVersionIdentifier>()
 
-		feature.projectDescriptors.each { bundledProjectDescriptor ->
+		feature.projectsDescriptors.each { bundledProjectDescriptor ->
 			def bundledProject = bundledProjectDescriptor.project
 			String artifactId = bundledProjectDescriptor.artifactId ?: bundledProject.name
 			feature.project.logger.debug("Processing project '${bundledProject.name}' with artifactId '${artifactId}' for feature '${feature.name}' dependencies ${bundledProjectDescriptor.dependencies}")

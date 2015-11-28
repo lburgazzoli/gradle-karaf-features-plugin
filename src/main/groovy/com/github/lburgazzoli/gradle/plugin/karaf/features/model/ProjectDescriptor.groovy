@@ -15,10 +15,10 @@
  */
 package com.github.lburgazzoli.gradle.plugin.karaf.features.model
 
-import org.gradle.api.Project
-import org.gradle.util.ConfigureUtil
 import groovy.transform.ToString
-
+import org.gradle.api.Project
+import org.gradle.api.artifacts.Configuration
+import org.gradle.util.ConfigureUtil
 
 /**
  * DSL extension allowing instruction on how to connect project with properties to a {@code <feature/>} entry
@@ -61,4 +61,16 @@ class ProjectDescriptor {
 	ProjectDependenciesDescriptor getDependencies() {
 		return this.dependenciesDescriptor;
 	}
+
+	def allprojects(Closure closure) {
+		project.allprojects(closure)
+	}
+
+	def getLogger() {
+		return project.logger
+	}
+
+    def Configuration getConfigurationByName(String name) {
+        project.configurations.getByName(name)
+    }
 }

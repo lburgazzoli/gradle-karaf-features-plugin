@@ -15,6 +15,7 @@
  */
 package com.github.lburgazzoli.gradle.plugin.karaf.features
 
+import com.github.lburgazzoli.gradle.plugin.karaf.features.impl.BundleDefinitionCalculatorMvnImpl
 import org.gradle.api.Project
 import org.gradle.api.artifacts.result.ComponentSelectionReason
 import org.gradle.api.artifacts.result.ResolvedComponentResult
@@ -43,7 +44,7 @@ class KarafFeaturesSpec extends Specification {
     //
     // *************************************************************************
 
-    def 'Simple project'() {
+    def 'Single project'() {
         given:
             def project = setupProjectAndDependencies()
             project.version = '1.2.3'

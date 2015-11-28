@@ -13,8 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.github.lburgazzoli.gradle.plugin.karaf.features
+package com.github.lburgazzoli.gradle.plugin.karaf.features.impl
 
+import com.github.lburgazzoli.gradle.plugin.karaf.features.BundleDefinition
+import com.github.lburgazzoli.gradle.plugin.karaf.features.BundleDefinitionCalculator
+import com.github.lburgazzoli.gradle.plugin.karaf.features.KarafFeaturesTaskExtension
 import org.gradle.api.artifacts.Configuration
 import org.gradle.api.artifacts.ModuleVersionIdentifier
 import org.gradle.api.artifacts.result.DependencyResult

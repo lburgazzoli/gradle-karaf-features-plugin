@@ -48,7 +48,7 @@ class FeatureDescriptor {
 	/**
 	 * The project from which the plugin is instantiated
 	 */
-	final Project project
+	final ProjectDescriptor project
 
 	/**
 	 * Any projects to be included in this feature.  We will pick up
@@ -81,15 +81,19 @@ class FeatureDescriptor {
 		this.extension = extension
 		this.name = name
 		this.version = project.version
-		this.project = project
+		this.project = new ProjectDescriptor(project)
         this.dependencyFeatures = []
         this.configurations = []
 		this.bundles = []
         this.projectDescriptors = []
 	}
 
+    def rootProject(Closure closure) {
+        ConfigureUtil.configure( closure, this.project )
+    }
+
 	def project(String projectName, Closure closure) {
-		this.project.allprojects.find {it.name == projectName || ":${it.name}" == projectName }.each {
+		this.project.project.allprojects.find {it.name == projectName || ":${it.name}" == projectName }.each {
             Project project -> this.addProject(project, closure)
 		}
 	}
@@ -107,7 +111,7 @@ class FeatureDescriptor {
     }
 
     private def addProject(Project project, Closure closure) {
-        this.project.logger.warn("Add project '${project?.name}' to feature '${this.name}'");
+        this.project.logger.debug("Add project '${project?.name}' to feature '${this.name}'");
         def projectDescriptor = new ProjectDescriptor(project)
         if(closure) {
             ConfigureUtil.configure( closure, projectDescriptor )
@@ -115,11 +119,11 @@ class FeatureDescriptor {
 
         this.projectDescriptors += projectDescriptor
 
-        this.project.logger.warn("Added new project descriptor '${projectDescriptor}' to feature '${this.name}'");
+        this.project.logger.debug("Added new project descriptor '${projectDescriptor}' to feature '${this.name}'");
     }
 
     public List<ProjectDescriptor> getProjectDescriptors() {
-        return this.projectDescriptors //.isEmpty() ? this.projectDescriptors : [] //[ new ProjectDescriptor(project) ]
+        return this.projectDescriptors
     }
 
 	def bundle(String pattern, Closure closure) {
@@ -176,7 +180,7 @@ class FeatureDescriptor {
     }
 
     def bundlesFrom(String configurationName) {
-        Configuration configuration = this.project.configurations.getByName(configurationName);
+        Configuration configuration = this.project.getConfigurationByName(configurationName);
         if(configuration) {
             this.configurations.add(configuration)
         }

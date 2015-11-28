@@ -38,11 +38,13 @@ karafFeatures {
   
   features {
     mainFeature {
-      name = 'main-feature-name'
-      repository('mvn:group/dependent-feature/1.2.3/xml/features')
+      name = 'main-feature-name'      
       description = 'Some useful description'
+      
+      repository('mvn:group/dependent-feature/1.2.3/xml/features')
       feature('dependent-feature')
-      configuration(project.configurations.myAdditionalDepList)
+      
+      
       project(':subproject1')
       project(':subproject2') {
         dependencies {
@@ -51,6 +53,7 @@ karafFeatures {
         artifactId = "newSubProject2"         // project name by default
       }
       
+      bundlesFrom(project.configurations.myAdditionalDepList)
       bundle('com.squareup.retrofit:converter-jackson') {
         include = false
       }

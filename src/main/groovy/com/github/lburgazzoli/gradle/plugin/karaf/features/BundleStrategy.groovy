@@ -15,6 +15,9 @@
  */
 package com.github.lburgazzoli.gradle.plugin.karaf.features
 
+import com.github.lburgazzoli.gradle.plugin.karaf.features.impl.BundleDefinitionCalculatorMvnImpl
+import com.github.lburgazzoli.gradle.plugin.karaf.features.impl.BundleDefinitionCalculatorObrImpl
+
 /**
  * Enumeration of the supported strategies for handling bundle definitions in the produced
  * Karaf features.

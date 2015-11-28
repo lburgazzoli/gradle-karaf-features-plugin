@@ -13,8 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.github.lburgazzoli.gradle.plugin.karaf.features
+package com.github.lburgazzoli.gradle.plugin.karaf.features.impl
 
+import com.github.lburgazzoli.gradle.plugin.karaf.features.BundleDefinition
+import com.github.lburgazzoli.gradle.plugin.karaf.features.BundleDefinitionCalculator
+import com.github.lburgazzoli.gradle.plugin.karaf.features.KarafFeaturesTaskExtension
 import com.github.lburgazzoli.gradle.plugin.karaf.features.model.BundleInstructionDescriptor
 import com.github.lburgazzoli.gradle.plugin.karaf.features.model.FeatureDescriptor
 import org.gradle.api.artifacts.Configuration
@@ -29,6 +32,7 @@ import org.gradle.api.tasks.bundling.Jar
 
 import java.util.jar.JarFile
 import java.util.jar.Manifest
+
 /**
  * @author Steve Ebersole
  * @author Sergey Nekhviadovich
@@ -41,9 +45,9 @@ public class BundleDefinitionCalculatorMvnImpl implements BundleDefinitionCalcul
 
 	@Override
 	public List<BundleDefinition> calculate(
-			FeatureDescriptor feature,
-			KarafFeaturesTaskExtension extension,
-			Configuration extraBundles) {
+            FeatureDescriptor feature,
+            KarafFeaturesTaskExtension extension,
+            Configuration extraBundles) {
 		// The LinkedHashMap here will hold the dependencies in order, transitivity depth first
 		//	  IMPL NOTE: Initially tried LinkedHashSet<ResolvedComponentResult>, but
 		//		  ResolvedComponentResult does not properly implement equals/hashCode in terms
@@ -65,7 +69,7 @@ public class BundleDefinitionCalculatorMvnImpl implements BundleDefinitionCalcul
 		finalOrderedDependencyMap.putAll(orderedDependencyMap)
 		Map<ModuleVersionIdentifier, ModuleVersionIdentifier> projectIdentifiersMap = new HashMap<ModuleVersionIdentifier, ModuleVersionIdentifier>()
 
-		feature.projectDescriptors.each { bundledProjectDescriptor ->
+		(feature.projectDescriptors ?: [ feature.project ]).each { bundledProjectDescriptor ->
 			def bundledProject = bundledProjectDescriptor.project
 			String artifactId = bundledProjectDescriptor.artifactId ?: bundledProject.name
 			feature.project.logger.debug("Processing project '${bundledProject.name}' with artifactId '${artifactId}' for feature '${feature.name}' dependencies ${bundledProjectDescriptor.dependencies}")

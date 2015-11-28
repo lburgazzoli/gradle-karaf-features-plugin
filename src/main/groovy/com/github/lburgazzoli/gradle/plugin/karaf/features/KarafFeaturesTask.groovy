@@ -61,6 +61,7 @@ class KarafFeaturesTask extends DefaultTask {
         
         def (majXsdVer, minXsdVer) = extension.xsdVersion.split('\\.').collect { it.toInteger() }
         def xsdVer13 = majXsdVer > 1 || ( majXsdVer == 1 && minXsdVer >= 3 );
+        def bundleDefinitionCalculator = extension.bundleStrategy.bundleDefinitionCalculator
 
         builder.features(xmlns:FEATURES_XMLNS_PREFIX + extension.xsdVersion, name: extension.name) {
             extension.repositories.each {
@@ -80,20 +81,14 @@ class KarafFeaturesTask extends DefaultTask {
                     }
 
                     // Render bundle dependencies
-                    extension.getLogger().debug("Calculate bundle definitions for feature '${feature.name}'")
-                    List<BundleDefinition> bundles = extension.bundleStrategy.bundleDefinitionCalculator.calculateBundleDefinitions(
-                            feature,
-                            extension,
-                            extraBundles
-                    )
-                    
-                    bundles.each { bundle ->
+                    extension.logger.warn("Calculate bundle definitions for feature '${feature.name}'")
+                    bundleDefinitionCalculator.calculate(feature, extension, extraBundles).each {
                         builder.bundle(
                             [
-                                'dependency': bundle.dependency,
-                                'start-level': bundle.startLevel
+                                'dependency' : it.dependency,
+                                'start-level': it.startLevel
                             ],
-                            bundle.url
+                            it.url
                         )
                     }
                 }

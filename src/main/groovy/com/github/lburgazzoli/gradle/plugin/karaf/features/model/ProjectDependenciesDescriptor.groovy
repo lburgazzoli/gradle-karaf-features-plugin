@@ -15,12 +15,7 @@
  */
 package com.github.lburgazzoli.gradle.plugin.karaf.features.model
 
-import org.gradle.api.Project
-import org.gradle.api.artifacts.Configuration
-import org.gradle.util.ConfigureUtil
 import groovy.transform.ToString
-
-import com.github.lburgazzoli.gradle.plugin.karaf.features.KarafFeaturesTaskExtension
 
 /**
  * DSL extension allowing instruction on how to connect project with properties to a {@code <feature/>} entry
@@ -35,8 +30,8 @@ import com.github.lburgazzoli.gradle.plugin.karaf.features.KarafFeaturesTaskExte
 class ProjectDependenciesDescriptor {
 
 	/**
-	 * The flag how to process project's transitive dependecies
-	 * WARN: not fully supported with Obr dependecies
+	 * The flag how to process project's transitive dependencies
+	 * WARN: not fully supported with Obr dependencies
 	 */
 	def Boolean transitive = true
 

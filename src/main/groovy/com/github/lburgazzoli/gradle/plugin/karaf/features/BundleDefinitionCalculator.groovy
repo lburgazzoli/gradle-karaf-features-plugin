@@ -25,8 +25,16 @@ import com.github.lburgazzoli.gradle.plugin.karaf.features.model.FeatureDescript
  * @author Steve Ebersole
  */
 interface BundleDefinitionCalculator {
-	List<BundleDefinition> calculateBundleDefinitions(
-			FeatureDescriptor featureDescriptor,
-			KarafFeaturesTaskExtension extension,
-			Configuration extraBundles)
+
+	/**
+	 *
+	 * @param featureDescriptor
+	 * @param extension
+	 * @param extraBundles
+     * @return
+     */
+	List<BundleDefinition> calculate(
+		FeatureDescriptor featureDescriptor,
+		KarafFeaturesTaskExtension extension,
+		Configuration extraBundles)
 }

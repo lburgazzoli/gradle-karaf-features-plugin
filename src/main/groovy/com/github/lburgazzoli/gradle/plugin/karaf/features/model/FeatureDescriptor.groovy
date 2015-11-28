@@ -33,22 +33,22 @@ class FeatureDescriptor {
 	/**
 	 * The name to be used in the {@code <feature/>} entry
 	 */
-	def String name
+	String name
 
 	/**
 	 * The version to be used in the {@code <feature/>} entry
 	 */
-	def String version
+	String version
 
 	/**
 	 * Optional description for the feature
 	 */
-	def String description
+	String description
 
 	/**
 	 * The project from which the plugin is instantiated
 	 */
-	final def Project project
+	final Project project
 
 	/**
 	 * Any projects to be included in this feature.  We will pick up
@@ -56,24 +56,24 @@ class FeatureDescriptor {
 	 * add them as bundles.  These project runtime configurations are
 	 * considered additive to the {@link #configurations} configurations
 	 */
-	protected def ProjectDescriptor[] projectDescriptors
+    private List<ProjectDescriptor> projectDescriptors
 
 	/**
 	 * Any Configurations containing dependencies to apply as bundles
 	 * to this feature.  These configurations are considered additive to the
 	 * project runtime configurations from {@link #projectDescriptors}
 	 */
-	protected def List<Configuration> configurations
+	protected List<Configuration> configurations
 
 	/**
 	 * Any specific bundle instructions to apply within this feature.
 	 */
-	protected def BundleInstructionDescriptor[] bundles
+    private List<BundleInstructionDescriptor> bundles
 	
 	/**
 	 * List of feature dependencies. Support version and dependency properties.
 	 */
-	def FeatureDependencyDescriptor[] dependencyFeatures;
+	protected List<FeatureDependencyDescriptor> dependencyFeatures;
 
 	private final KarafFeaturesTaskExtension extension
 
@@ -84,76 +84,62 @@ class FeatureDescriptor {
 		this.project = project
         this.dependencyFeatures = []
         this.configurations = []
+		this.bundles = []
+        this.projectDescriptors = []
 	}
 
 	def project(String projectName, Closure closure) {
-		this.project.allprojects.find {it.name == projectName || ":${it.name}" == projectName }.each { project ->
-			def projectDescriptor = new ProjectDescriptor(project)
-			if ( closure ) {
-				ConfigureUtil.configure( closure, projectDescriptor )
-			}
-			this.project.logger.debug("Add project '${project.name}' to feature '${this.name}'");
-			if ( this.projectDescriptors) {
-				this.projectDescriptors = [ projectDescriptor ]
-			} else {
-				this.projectDescriptors += projectDescriptor
-			}
+		this.project.allprojects.find {it.name == projectName || ":${it.name}" == projectName }.each {
+            Project project -> this.addProject(project, closure)
 		}
 	}
 
 	def project(String projectName) {
-		project(projectName, null)
+        addProject(projectName, null)
 	}
 
 	def project(Project project) {
-		this.project.logger.debug("Add project '${project.name}' to feature '${this.name}'");
-		def projectDescriptor = new ProjectDescriptor(project)
-		if ( this.projectDescriptors == null ) {
-			this.projectDescriptors = [ projectDescriptor ]
-		} else {
-			this.projectDescriptors += projectDescriptor
-		}
+        addProject(Project, null)
 	}
 
-	def project(Closure closure) {
-		this.project.logger.debug("Add new project via closure to feature '${this.name}'");
-		def projectDescriptor = new ProjectDescriptor(null)
-		ConfigureUtil.configure( closure, projectDescriptor )
-		if ( this.projectDescriptors == null ) {
-			this.projectDescriptors = [ projectDescriptor ]
-		} else {
-			this.projectDescriptors += projectDescriptor
-		}
-		this.project.logger.debug("Added new project descriptor '${projectDescriptor}' to feature '${this.name}'");
-	}
+    def project(Closure closure) {
+        this.addProject(null, closure)
+    }
+
+    private def addProject(Project project, Closure closure) {
+        this.project.logger.warn("Add project '${project?.name}' to feature '${this.name}'");
+        def projectDescriptor = new ProjectDescriptor(project)
+        if(closure) {
+            ConfigureUtil.configure( closure, projectDescriptor )
+        }
+
+        this.projectDescriptors += projectDescriptor
+
+        this.project.logger.warn("Added new project descriptor '${projectDescriptor}' to feature '${this.name}'");
+    }
+
+    public List<ProjectDescriptor> getProjectDescriptors() {
+        return this.projectDescriptors //.isEmpty() ? this.projectDescriptors : [] //[ new ProjectDescriptor(project) ]
+    }
 
 	def bundle(String pattern, Closure closure) {
         this.project.logger.debug("Add bundle '${pattern}' to feature '${this.name}'");
 
 		def descriptor = new BundleInstructionDescriptor(BundleMatcher.from(pattern))
-		ConfigureUtil.configure( closure, descriptor )
+        if(closure) {
+            ConfigureUtil.configure(closure, descriptor)
+        }
 
-		if ( bundles == null ) {
-			bundles = [ descriptor ]
-		} else {
-			bundles += descriptor
-		}
+        bundles += descriptor
 	}
 
 	def bundle(Closure closure) {
-		def descriptor = new ExtendedBundleInstructionDescriptor()
-		ConfigureUtil.configure( closure, descriptor )
+        bundles += ConfigureUtil.configure(closure, new ExtendedBundleInstructionDescriptor())
+	}
 
-		if ( bundles == null ) {
-			bundles = [ descriptor ]
-		} else {
-			bundles += descriptor
-		}
-	}
-	
-	public ProjectDescriptor[] getProjectDescriptors() {
-		return this.projectDescriptors != null ? this.projectDescriptors : [ new ProjectDescriptor(project) ]
-	}
+    public List<BundleInstructionDescriptor> getBundles() {
+        return this.bundles
+    }
 
     def features(Collection<String> featureNames) {
         featureNames.each {
@@ -183,13 +169,13 @@ class FeatureDescriptor {
 		this.dependencyFeatures += featureDependencyDescriptor
 	}
 
-    def configuration(Configuration configuration) {
+    def bundlesFrom(Configuration configuration) {
         if(configuration) {
             this.configurations.add(configuration)
         }
     }
 
-    def configuration(String configurationName) {
+    def bundlesFrom(String configurationName) {
         Configuration configuration = this.project.configurations.getByName(configurationName);
         if(configuration) {
             this.configurations.add(configuration)

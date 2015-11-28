@@ -15,6 +15,7 @@
  */
 package com.github.lburgazzoli.gradle.plugin.karaf.features
 
+import org.gradle.api.Project
 import org.gradle.api.artifacts.result.ComponentSelectionReason
 import org.gradle.api.artifacts.result.ResolvedComponentResult
 import org.gradle.api.internal.artifacts.DefaultModuleVersionIdentifier
@@ -38,6 +39,10 @@ class KarafFeaturesSpec extends Specification {
             getKarafFeaturesTasks(project) instanceof KarafFeaturesTask
     }
 
+    // *************************************************************************
+    //
+    // *************************************************************************
+
     def 'Simple project'() {
         given:
             def project = setupProjectAndDependencies()
@@ -48,7 +53,7 @@ class KarafFeaturesSpec extends Specification {
             def feature = features.create('myFeature')
             feature.name = 'karaf-features-simple-project'
             feature.description = 'feature-description'
-            feature.configuration('myAdditionalDependencies')
+            feature.bundlesFrom('myAdditionalDependencies')
             feature.bundle('com.squareup.retrofit:converter-jackson') {
                 include = false
             }
@@ -58,6 +63,8 @@ class KarafFeaturesSpec extends Specification {
         then:
             featuresStr != null
             featuresXml != null
+
+            println featuresStr
 
             featuresXml.feature.@name == 'karaf-features-simple-project'
             featuresXml.feature.@description == 'feature-description'
@@ -77,7 +84,11 @@ class KarafFeaturesSpec extends Specification {
                 }.size() == 0
 
     }
-    
+
+    // *************************************************************************
+    //
+    // *************************************************************************
+
     def 'Test project dependencies DSL'() {
         given:
             def project = setupProjectAndDependencies()
@@ -126,8 +137,10 @@ class KarafFeaturesSpec extends Specification {
             featuresStr != null
             featuresXml != null
 
-            feature.getProjectDescriptors().size() == 1
-            def pd = feature.getProjectDescriptors()[0];
+            println featuresStr
+
+            feature.projectDescriptors.size() == 1
+            def pd = feature.projectDescriptors[0];
             pd.project.name == 'sub1'
             pd.dependencies.transitive == false
 
@@ -160,6 +173,8 @@ class KarafFeaturesSpec extends Specification {
         then:
             featuresStr != null
             featuresXml != null
+
+            println featuresStr
 
             featuresXml.feature.@name == 'karaf-features-simple-project'
             featuresXml.feature.@description == 'feature-description'
@@ -197,6 +212,8 @@ class KarafFeaturesSpec extends Specification {
             featuresStr != null
             featuresXml != null
 
+            println featuresStr
+
             featuresXml.feature.@name == 'karaf-features-simple-project'
             featuresXml.feature.@description == 'feature-description'
             featuresXml.feature.@version == '1.2.3'
@@ -219,7 +236,7 @@ class KarafFeaturesSpec extends Specification {
         return project
     }
 
-    def setupProject(project) {
+    def setupProject(Project project) {
         new KarafFeaturesPlugin().apply(project)
         project.apply plugin: 'java'
         project.apply plugin: 'maven'
@@ -236,7 +253,7 @@ class KarafFeaturesSpec extends Specification {
         return project
     }
 
-    def setupProjectDependencies(project) {
+    def setupProjectDependencies(Project project) {
         project.dependencies {
             compile 'com.google.guava:guava:18.0'
             compile "com.squareup.retrofit:retrofit:1.9.0"
@@ -244,6 +261,42 @@ class KarafFeaturesSpec extends Specification {
 
             myAdditionalDependencies "commons-lang:commons-lang:2.6"
         }
+    }
+
+    def setupMultiProjectAndDependencies() {
+        def project = ProjectBuilder.builder().withName('root').build()
+        project.apply plugin: 'com.github.lburgazzoli.karaf.features'
+
+        def sp1 = setupSubproject(project, "subproject1")
+        def sp2 = setupSubproject(project, "subproject2")
+
+        project.subprojects.each {
+            it.apply plugin: 'java'
+            it.apply plugin: 'maven'
+            it.apply plugin: 'osgi'
+
+            it.repositories {
+                mavenLocal()
+                mavenCentral()
+            }
+
+            it.configure([it]) {
+                tasks.create(name: 'jar', type: Jar){}
+            }
+        }
+
+        sp1.dependencies {
+            compile 'commons-io:commons-io:2.4'
+        }
+        sp2.dependencies {
+            compile 'commons-lang:commons-lang:2.6'
+        }
+
+        return project
+    }
+
+    def setupSubproject(Project root, String name) {
+        return ProjectBuilder.builder().withName(name).withParent(root).build()
     }
 
     def getKarafFeaturesExtension(project) {

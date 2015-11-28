@@ -16,11 +16,9 @@
 package com.github.lburgazzoli.gradle.plugin.karaf.features.model
 
 import org.gradle.api.Project
-import org.gradle.api.artifacts.Configuration
 import org.gradle.util.ConfigureUtil
 import groovy.transform.ToString
 
-import com.github.lburgazzoli.gradle.plugin.karaf.features.KarafFeaturesTaskExtension
 
 /**
  * DSL extension allowing instruction on how to connect project with properties to a {@code <feature/>} entry
@@ -47,7 +45,7 @@ class ProjectDescriptor {
 	def ProjectDependenciesDescriptor dependenciesDescriptor
 
 	/**
-	 * Property to override project.name while feature geeration
+	 * Property to override project.name while feature generation
 	 */
 	def String artifactId
 

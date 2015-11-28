@@ -15,22 +15,20 @@
  */
 package com.github.lburgazzoli.gradle.plugin.karaf.features
 
-import java.util.jar.JarFile
-import java.util.jar.Manifest
-
+import com.github.lburgazzoli.gradle.plugin.karaf.features.model.BundleInstructionDescriptor
+import com.github.lburgazzoli.gradle.plugin.karaf.features.model.FeatureDescriptor
 import org.gradle.api.artifacts.Configuration
 import org.gradle.api.artifacts.ModuleVersionIdentifier
 import org.gradle.api.artifacts.result.DependencyResult
 import org.gradle.api.artifacts.result.ResolvedComponentResult
 import org.gradle.api.artifacts.result.ResolvedDependencyResult
 import org.gradle.api.artifacts.result.UnresolvedDependencyResult
-import org.gradle.api.internal.artifacts.result.DefaultResolvedComponentResult
 import org.gradle.api.internal.artifacts.DefaultModuleVersionIdentifier
+import org.gradle.api.internal.artifacts.result.DefaultResolvedComponentResult
 import org.gradle.api.tasks.bundling.Jar
 
-import com.github.lburgazzoli.gradle.plugin.karaf.features.model.BundleInstructionDescriptor
-import com.github.lburgazzoli.gradle.plugin.karaf.features.model.FeatureDescriptor
-
+import java.util.jar.JarFile
+import java.util.jar.Manifest
 /**
  * @author Steve Ebersole
  * @author Sergey Nekhviadovich
@@ -42,7 +40,7 @@ public class BundleDefinitionCalculatorMvnImpl implements BundleDefinitionCalcul
 	public static final BundleDefinitionCalculatorMvnImpl INSTANCE = new BundleDefinitionCalculatorMvnImpl();
 
 	@Override
-	public List<BundleDefinition> calculateBundleDefinitions(
+	public List<BundleDefinition> calculate(
 			FeatureDescriptor feature,
 			KarafFeaturesTaskExtension extension,
 			Configuration extraBundles) {
@@ -71,17 +69,17 @@ public class BundleDefinitionCalculatorMvnImpl implements BundleDefinitionCalcul
 			def bundledProject = bundledProjectDescriptor.project
 			String artifactId = bundledProjectDescriptor.artifactId ?: bundledProject.name
 			feature.project.logger.debug("Processing project '${bundledProject.name}' with artifactId '${artifactId}' for feature '${feature.name}' dependencies ${bundledProjectDescriptor.dependencies}")
-            
+
 			collectDependencies( feature, bundledProjectDescriptor.dependencies.transitive ? finalOrderedDependencyMap : orderedDependencyMap, resolvedArtifactMap, bundledProject.configurations.runtime, extension, true )
 			ModuleVersionIdentifier projectVersionId = new DefaultModuleVersionIdentifier(
-				"${bundledProject.group}",
-				"${bundledProject.name}",
-				"${bundledProject.version}"
+					"${bundledProject.group}",
+					"${bundledProject.name}",
+					"${bundledProject.version}"
 			)
 			resolvedArtifactMap.put( projectVersionId, ( bundledProject.tasks.jar as Jar ).archivePath )
 			projectIdentifiersMap.put( projectVersionId, new DefaultModuleVersionIdentifier("${bundledProject.group}", artifactId, "${bundledProject.version}") )
 		}
-        
+
 		orderedDependencyMap.each { k, v ->
 			if ( projectIdentifiersMap.containsKey( k ) ) {
 				finalOrderedDependencyMap.put( k, new DefaultResolvedComponentResult(projectIdentifiersMap.get( k ), v.selectionReason, v.id) )
@@ -91,7 +89,7 @@ public class BundleDefinitionCalculatorMvnImpl implements BundleDefinitionCalcul
 		List<BundleDefinition> bundleDefinitions = []
 
 		finalOrderedDependencyMap.values().each { dep ->
-            
+
 			final BundleInstructionDescriptor bundleDescriptor = findBundleInstructions( dep, feature )
 			final File resolvedBundleArtifact = resolvedArtifactMap.get( dep.moduleVersion )
 
@@ -145,13 +143,13 @@ public class BundleDefinitionCalculatorMvnImpl implements BundleDefinitionCalcul
 			KarafFeaturesTaskExtension extension,
 			boolean includeResolvedComponentResult,
 			Set processedComponents) {
-            
+
 		feature.project.logger.debug("Processing dependency '${resolvedComponentResult}' for feature '${feature.name}'")
 		final BundleInstructionDescriptor bundleInstructions = findBundleInstructions( resolvedComponentResult, feature )
 		if ( bundleInstructions != null && !bundleInstructions.include ) {
 			return;
 		}
-        
+
 		if (processedComponents.contains(resolvedComponentResult.moduleVersion)) {
 			return
 		}

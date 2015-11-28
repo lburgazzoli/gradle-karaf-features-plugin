@@ -38,7 +38,7 @@ class BundleDefinitionCalculatorObrImpl implements BundleDefinitionCalculator {
 	public static final BundleDefinitionCalculatorObrImpl INSTANCE = new BundleDefinitionCalculatorObrImpl();
 
 	@Override
-	List<BundleDefinition> calculateBundleDefinitions(
+	List<BundleDefinition> calculate(
 			FeatureDescriptor feature,
 			KarafFeaturesTaskExtension extension,
 			Configuration extraBundles) {

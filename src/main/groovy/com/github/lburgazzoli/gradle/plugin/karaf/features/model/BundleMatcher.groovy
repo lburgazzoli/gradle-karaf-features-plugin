@@ -15,6 +15,7 @@
  */
 package com.github.lburgazzoli.gradle.plugin.karaf.features.model
 
+import groovy.transform.ToString
 import org.gradle.api.IllegalDependencyNotation
 import org.gradle.api.artifacts.ModuleVersionIdentifier
 import org.gradle.api.artifacts.result.ResolvedComponentResult
@@ -24,6 +25,7 @@ import org.gradle.api.internal.artifacts.DefaultModuleVersionIdentifier
  * @author Steve Ebersole
  * @author Luca Burgazzoli
  */
+@ToString(includeNames = true)
 public class BundleMatcher {
 	def String group
 	def String name
@@ -56,10 +58,5 @@ public class BundleMatcher {
             name    : notationParts.length >= 2 ? notationParts[1] :  null,
             version : notationParts.length == 3 ? notationParts[2] :  null,
         ] as BundleMatcher
-	}
-
-	@Override
-	public String toString() {
-		return "BundleMatcher[ group:${group}, name:${name}, version:${version} ]"
 	}
 }

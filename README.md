@@ -7,7 +7,7 @@ build.gradle
 ```
 // Gradle 2.1+
 plugins {
-  id "com.github.lburgazzoli.karaf.features" version "2.9.1"
+  id "com.github.lburgazzoli.karaf.features" version "2.9.4"
 }
 
 group = 'com.github'
@@ -39,7 +39,7 @@ karafFeatures {
   features {
     mainFeature {
       name = 'main-feature-name'
-      repositories = ['mvn:group/dependent-feature/1.2.3/xml/features']
+      repository('mvn:group/dependent-feature/1.2.3/xml/features')
       description = 'Some useful description'
       feature('dependent-feature')
       configuration(project.configurations.myAdditionalDepList)
@@ -94,7 +94,7 @@ Karaf 4 features xsd v1.3.0 partially supported
 ```
 
 To generate this stuff  
-1. Set featuresXsdVersion to 1.3.0  
+1. Set xsdVersion to 1.3.0  
 2. Use dependency with configuration closure  
 ```
 karafFeatures {
@@ -104,7 +104,7 @@ karafFeatures {
   features {
     mainFeature {
       name = 'main-feature-name'
-      dependency('dependent-feature') {
+      feature('dependent-feature') {
         dependency = true              //false by default
         version = "1.2.3"              //empty by default
       }

@@ -61,13 +61,13 @@ class KarafFeaturesPlugin implements Plugin<Project> {
                 task.inputs.files(configuration)
 
                 extension.features.each { feature ->
-                    project.logger.debug("Karaf feature '${feature.name}' processing, projects '${feature.projectDescriptors}'");
+                    project.logger.debug("Karaf feature '${feature.name}' processing, projects '${feature.projectsDescriptors}'");
                     feature.configurations.each {
                         task.inputs.files(it)
                         task.dependsOn(it)
                     }
 
-                    feature.projectDescriptors.each { bundleProjectDescriptor ->
+                    feature.projectsDescriptors.each { bundleProjectDescriptor ->
                         // we need access the jar for any project we generate feature for
                         def bundleProject = bundleProjectDescriptor.project
                         project.logger.debug("Karaf feature '${feature.name}' processing project '${bundleProject.name}'");

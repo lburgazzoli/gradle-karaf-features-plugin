@@ -47,7 +47,7 @@ class BundleDefinitionCalculatorObrImpl implements BundleDefinitionCalculator {
 		feature.configurations.each {
 			collectDependencies( feature, dependencies, it, null )
 		}
-		feature.projectDescriptors.each { bundledProjectDescriptor ->
+		feature.projectsDescriptors.each { bundledProjectDescriptor ->
 			collectDependencies( feature, dependencies, bundledProjectDescriptor.project.configurations.runtime, bundledProjectDescriptor )
 		}
 

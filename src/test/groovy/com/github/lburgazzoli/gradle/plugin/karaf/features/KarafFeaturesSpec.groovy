@@ -126,8 +126,8 @@ class KarafFeaturesSpec extends Specification {
             featuresStr != null
             featuresXml != null
 
-            feature.getProjectDescriptors().size() == 1
-            def pd = feature.getProjectDescriptors()[0];
+            feature.getProjectsDescriptors().size() == 1
+            def pd = feature.getProjectsDescriptors()[0];
             pd.project.name == 'sub1'
             pd.dependencies.transitive == false
 

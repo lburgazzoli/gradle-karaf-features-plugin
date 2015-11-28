@@ -93,7 +93,7 @@ class FeatureDescriptor {
 				ConfigureUtil.configure( closure, projectDescriptor )
 			}
 			this.project.logger.debug("Add project '${project.name}' to feature '${this.name}'");
-			if ( this.projectDescriptors) {
+			if ( this.projectDescriptors == null ) {
 				this.projectDescriptors = [ projectDescriptor ]
 			} else {
 				this.projectDescriptors += projectDescriptor
@@ -151,7 +151,8 @@ class FeatureDescriptor {
 		}
 	}
 	
-	public ProjectDescriptor[] getProjectDescriptors() {
+	public ProjectDescriptor[] getProjectsDescriptors() {
+        this.project.logger.debug("Get project descriptors, this = ${projectDescriptors}");
 		return this.projectDescriptors != null ? this.projectDescriptors : [ new ProjectDescriptor(project) ]
 	}
 

@@ -63,6 +63,7 @@ class KarafFeaturesTask extends DefaultTask {
         def xsdVer13 = majXsdVer > 1 || ( majXsdVer == 1 && minXsdVer >= 3 );
         def bundleDefinitionCalculator = extension.bundleStrategy.bundleDefinitionCalculator
 
+        builder.mkp.xmlDeclaration(version: "1.0", encoding: "utf-8", standalone: "yes")
         builder.features(xmlns:FEATURES_XMLNS_PREFIX + extension.xsdVersion, name: extension.name) {
             extension.repositories.each {
                 builder.repository( it )

@@ -14,11 +14,11 @@
  * limitations under the License.
  */
 package com.github.lburgazzoli.gradle.plugin.karaf.features
-
 import groovy.xml.MarkupBuilder
 import org.gradle.api.DefaultTask
 import org.gradle.api.artifacts.Configuration
 import org.gradle.api.tasks.TaskAction
+import org.gradle.util.VersionNumber
 
 /**
  * The Gradle task to perform generation of a Karaf features repository file (XML or kar)
@@ -29,6 +29,7 @@ import org.gradle.api.tasks.TaskAction
  */
 class KarafFeaturesTask extends DefaultTask {
     public static final String FEATURES_XMLNS_PREFIX = 'http://karaf.apache.org/xmlns/features/v'
+    public static final VersionNumber XMLNS_V13 = new  VersionNumber(1, 3, 0, null)
 
     private KarafFeaturesTaskExtension extension_;
     private Configuration extraBundles_;
@@ -58,9 +59,9 @@ class KarafFeaturesTask extends DefaultTask {
 
         def builder = new MarkupBuilder(writer)
         builder.setOmitNullAttributes(true)
-        
-        def (majXsdVer, minXsdVer) = extension.xsdVersion.split('\\.').collect { it.toInteger() }
-        def xsdVer13 = majXsdVer > 1 || ( majXsdVer == 1 && minXsdVer >= 3 );
+        builder.setDoubleQuotes(true)
+
+        def xsdVer13 = VersionNumber.parse(extension.xsdVersion).compareTo(XMLNS_V13) >= 0
         def bundleDefinitionCalculator = extension.bundleStrategy.bundleDefinitionCalculator
 
         builder.mkp.xmlDeclaration(version: "1.0", encoding: "UTF-8", standalone: "yes")
@@ -82,7 +83,6 @@ class KarafFeaturesTask extends DefaultTask {
                     }
 
                     // Render bundle dependencies
-                    extension.logger.warn("Calculate bundle definitions for feature '${feature.name}'")
                     bundleDefinitionCalculator.calculate(feature, extension, extraBundles).each {
                         builder.bundle(
                             [

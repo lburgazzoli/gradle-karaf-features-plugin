@@ -222,7 +222,8 @@ class KarafFeaturesSpec extends Specification {
             featuresXml.feature.feature[1].text() == 'dependencyFeatureName2'
             featuresXml.feature.feature[1].@version == '5.6.7'
             featuresXml.feature.feature[1].@dependency == 'true'
-            featuresStr.contains("xmlns='http://karaf.apache.org/xmlns/features/v1.3.0'") == true
+
+            featuresStr.contains("xmlns=\"http://karaf.apache.org/xmlns/features/v1.3.0\"") == true
     }
 
     // *************************************************************************

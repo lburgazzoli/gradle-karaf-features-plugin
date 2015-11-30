@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 package com.github.lburgazzoli.gradle.plugin.karaf.features.impl
+
 import com.github.lburgazzoli.gradle.plugin.karaf.features.BundleDefinition
 import com.github.lburgazzoli.gradle.plugin.karaf.features.BundleDefinitionCalculator
 import com.github.lburgazzoli.gradle.plugin.karaf.features.KarafFeaturesTaskExtension
@@ -29,6 +30,7 @@ import org.gradle.jvm.tasks.Jar
 
 import java.util.jar.JarFile
 import java.util.jar.Manifest
+
 /**
  * @author Steve Ebersole
  * @author Sergey Nekhviadovich

@@ -114,7 +114,7 @@ modifyPom {
         }
 
         scm {
-            url                 = project.gitProject
+            url                 = project.ext.gitProject
             connection          = "scm:git:${project.gitProject}.git"
             developerConnection = "scm:git:${project.gitProject}.git"
         }
@@ -160,4 +160,8 @@ afterReleaseBuild.dependsOn uploadArchives, publishPlugins
 
 task promote(dependsOn: closeAndPromoteRepository) {
     println "Release"
+}
+
+task wrapper(type: Wrapper) {
+    gradleVersion = project.gradleVersion
 }

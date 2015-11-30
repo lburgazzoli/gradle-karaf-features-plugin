@@ -281,10 +281,6 @@ class KarafFeaturesSpec extends Specification {
                 mavenLocal()
                 mavenCentral()
             }
-
-            it.configure([it]) {
-                tasks.create(name: 'jar', type: Jar){}
-            }
         }
 
         sp1.dependencies {

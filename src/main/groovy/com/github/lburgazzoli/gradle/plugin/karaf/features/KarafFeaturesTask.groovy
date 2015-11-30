@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 package com.github.lburgazzoli.gradle.plugin.karaf.features
+
 import groovy.xml.MarkupBuilder
 import org.gradle.api.DefaultTask
 import org.gradle.api.artifacts.Configuration

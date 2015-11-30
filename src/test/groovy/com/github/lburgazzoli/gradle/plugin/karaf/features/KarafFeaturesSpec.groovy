@@ -81,9 +81,11 @@ class KarafFeaturesSpec extends Specification {
                     it.text().contains('mvn:com.squareup.retrofit/retrofit/1.9.0')
                 }.size() == 1
             featuresXml.feature.bundle.'**'.findAll {
+                    it.text().contains('mvn:org.apache.activemq/activemq-web-console/5.12.1/war')
+                }.size() == 1
+            featuresXml.feature.bundle.'**'.findAll {
                     it.text().contains('mvn:com.squareup.retrofit/converter-jackson/1.9.0')
                 }.size() == 0
-
     }
 
     // *************************************************************************
@@ -106,8 +108,8 @@ class KarafFeaturesSpec extends Specification {
             GroovyMock(BundleDefinitionCalculatorMvnImpl, global: true)
             
             BundleDefinitionCalculatorMvnImpl.hasOsgiManifestHeaders() >> true
-            BundleDefinitionCalculatorMvnImpl.collectDependencies(_, _, _, _, _, _) >> {
-                feature, orderedDependencyMap, resolvedArtifactMap, configuration, extension, includeRoot ->
+            BundleDefinitionCalculatorMvnImpl.collectDependencies(_, _, _, _, _) >> {
+                feature, orderedDependencyMap, configuration, extension, includeRoot ->
                     def mv = new DefaultModuleVersionIdentifier(subProject.group, subProject.name, subProject.version)
                     def result = Mock(ResolvedComponentResult)
                     result.getModuleVersion() >> mv
@@ -257,9 +259,10 @@ class KarafFeaturesSpec extends Specification {
 
     def setupProjectDependencies(Project project) {
         project.dependencies {
-            compile 'com.google.guava:guava:18.0'
+            compile "com.google.guava:guava:18.0"
             compile "com.squareup.retrofit:retrofit:1.9.0"
             compile "com.squareup.retrofit:converter-jackson:1.9.0"
+            compile "org.apache.activemq:activemq-web-console:5.12.1@war"
 
             myAdditionalDependencies "commons-lang:commons-lang:2.6"
         }

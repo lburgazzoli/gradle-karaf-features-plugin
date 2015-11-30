@@ -16,7 +16,6 @@
 package com.github.lburgazzoli.gradle.plugin.karaf.features.model
 
 import org.gradle.util.ConfigureUtil
-
 /**
  * DSL extension allowing instruction on how to produce a {@code <bundle/>} entry
  * in a Karaf features repository file
@@ -82,8 +81,7 @@ class BundleInstructionDescriptor {
 		return bundleWrapInstructionsDescriptor != null;
 	}
 
-	BundleWrapInstructionsDescriptor _getBundleWrapInstructionsDescriptor() {
+	BundleWrapInstructionsDescriptor getBundleWrapInstructionsDescriptor() {
 		return bundleWrapInstructionsDescriptor
 	}
-
 }

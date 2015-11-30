@@ -40,6 +40,8 @@ class BundleInstructionDescriptor {
 	 */
 	def String startLevel;
 
+    String type;
+
 	/**
 	 *
 	 * Whether the bundle should be generated as a dependency (i.e., {@code <bundle dependency="true"/>})
@@ -84,4 +86,12 @@ class BundleInstructionDescriptor {
 	BundleWrapInstructionsDescriptor getBundleWrapInstructionsDescriptor() {
 		return bundleWrapInstructionsDescriptor
 	}
+
+    public boolean hasExplicitJarType() {
+        return type == 'jar'
+    }
+
+    public boolean hasExplicitWarType() {
+        return type == 'jar'
+    }
 }

@@ -64,7 +64,6 @@ dependencies {
     compile gradleApi()
     compile localGroovy()
 
-    testCompile gradleTestKit()
     testCompile("org.spockframework:spock-core:$versions.spock") {
         exclude(module: 'groovy-all')
     }

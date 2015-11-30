@@ -193,14 +193,21 @@ public class BundleDefinitionCalculatorMvnImpl implements BundleDefinitionCalcul
 			File resolvedBundleArtifact) {
 		String bundleUrl = baseMvnUrl( bundleDescriptor )
 
-		if ( bundleInstructionDescriptor != null && bundleInstructionDescriptor.hasExplicitWrapInstructions() ) {
-			bundleUrl = "wrap:${bundleUrl}"
+		if ( bundleInstructionDescriptor != null) {
 
-            def sep = '?'
-            bundleInstructionDescriptor.bundleWrapInstructionsDescriptor?.instructions.entrySet().each {
-                // do these need to be encoded?
-                bundleUrl = "${bundleUrl}${sep}${it.key}=${it.value}"
-                sep = '&'
+            if(bundleDescriptor.isWar() || bundleInstructionDescriptor.hasExplicitWarType()) {
+                bundleUrl = "${bundleUrl}/war"
+            }
+
+			if(bundleInstructionDescriptor.hasExplicitWrapInstructions() ) {
+                bundleUrl = "wrap:${bundleUrl}"
+
+                def sep = '?'
+                bundleInstructionDescriptor.bundleWrapInstructionsDescriptor?.instructions.entrySet().each {
+                    // do these need to be encoded?
+                    bundleUrl = "${bundleUrl}${sep}${it.key}=${it.value}"
+                    sep = '&'
+                }
             }
 		} else if ( resolvedBundleArtifact != null && !hasOsgiManifestHeaders( resolvedBundleArtifact ) ) {
 			// if the resolved file does not have "proper" OSGi headers we

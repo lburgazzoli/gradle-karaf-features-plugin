@@ -15,6 +15,8 @@
  */
 package com.github.lburgazzoli.gradle.plugin.karaf.features
 
+import org.gradle.util.ConfigureUtil
+
 /**
  * Models the {@code <bundle/>} type from the Karaf features schema
  *
@@ -30,5 +32,14 @@ class BundleDefinition {
 
 	BundleDefinition(String url) {
 		this.url = url
+	}
+
+	static BundleDefinition forUrl(String url, Closure closure) {
+		def definition = new BundleDefinition(url)
+		if ( closure ) {
+			ConfigureUtil.configure( closure, definition )
+		}
+
+		return definition
 	}
 }

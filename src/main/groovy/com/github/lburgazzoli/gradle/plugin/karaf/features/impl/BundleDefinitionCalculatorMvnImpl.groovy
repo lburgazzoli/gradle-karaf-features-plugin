@@ -52,26 +52,27 @@ public class BundleDefinitionCalculatorMvnImpl implements BundleDefinitionCalcul
 		//		  ResolvedComponentResult does not properly implement equals/hashCode in terms
 		//		  of GAV which is what we need this uniquely based on.  So for now we use
 		//		  a LinkedHashMap keyed by the GAV.
-		LinkedHashMap<ModuleVersionIdentifier,BundleDescriptor> orderedDependencyMap = new LinkedHashMap<ModuleVersionIdentifier,BundleDescriptor>()
+		LinkedHashMap<ModuleVersionIdentifier,BundleDescriptor> dependencyMap = new LinkedHashMap<ModuleVersionIdentifier,BundleDescriptor>()
 
-		collectDependencies( feature, orderedDependencyMap, extraBundles, extension, false )
+		collectDependencies( feature, dependencyMap, extraBundles, extension, false )
 
 		feature.configurations.each {
-			collectDependencies( feature, orderedDependencyMap, it, extension, false )
+			collectDependencies( feature, dependencyMap, it, extension, false )
 		}
+
 		// A bit tricky approach to handle excluding transitive dependencies:
 		// We have finalOrderedDependencyMap for result dependencies.
         // We add there root projects and full projects where transitive dependencies included
 		// To exclude transitive dependencies we have temporary orderedDependencyMap
-		LinkedHashMap<ModuleVersionIdentifier,BundleDescriptor> finalOrderedDependencyMap = new LinkedHashMap<ModuleVersionIdentifier,BundleDescriptor>()
-		finalOrderedDependencyMap.putAll(orderedDependencyMap)
+		LinkedHashMap<ModuleVersionIdentifier,BundleDescriptor> finalDependencyMap = new LinkedHashMap<ModuleVersionIdentifier,BundleDescriptor>()
+        finalDependencyMap.putAll(dependencyMap)
 
 		Map<ModuleVersionIdentifier, BundleDescriptor> projectIdentifiersMap = new HashMap<ModuleVersionIdentifier, BundleDescriptor>()
 
 		(feature.projectDescriptors ?: [ feature.project ]).each { projectDescriptor ->
 			collectDependencies(
                 feature,
-                projectDescriptor.dependencies.transitive ? finalOrderedDependencyMap : orderedDependencyMap,
+                projectDescriptor.dependencies.transitive ? finalDependencyMap : dependencyMap,
                 projectDescriptor.project.configurations.runtime,
                 extension,
                 true )
@@ -85,13 +86,13 @@ public class BundleDefinitionCalculatorMvnImpl implements BundleDefinitionCalcul
             )
 		}
 
-		orderedDependencyMap.each { k, v ->
+        dependencyMap.each { k, v ->
 			if ( k in projectIdentifiersMap ) {
-				finalOrderedDependencyMap.put( k, projectIdentifiersMap.get( k ))
+                finalDependencyMap.put( k, projectIdentifiersMap.get( k ))
 			}
 		}
 
-		return finalOrderedDependencyMap.values().collect { dep ->
+		return finalDependencyMap.values().collect { dep ->
             final BundleInstructionDescriptor bundleInstruction = findBundleInstructions( dep.version , feature )
 
             final String url;
@@ -101,13 +102,12 @@ public class BundleDefinitionCalculatorMvnImpl implements BundleDefinitionCalcul
                 url = renderUrl( dep, bundleInstruction, dep.path )
             }
 
-            final BundleDefinition bundleDefinition = new BundleDefinition( url )
-            if ( bundleInstruction != null ) {
-                bundleDefinition.dependency = bundleInstruction.dependency
-                bundleDefinition.startLevel = bundleInstruction.startLevel
+            return BundleDefinition.forUrl(url) {
+                if(bundleInstruction) {
+                    dependency = bundleInstruction.dependency
+                    startLevel = bundleInstruction.startLevel
+                }
             }
-
-            bundleDefinition
         }
 	}
 
@@ -134,14 +134,17 @@ public class BundleDefinitionCalculatorMvnImpl implements BundleDefinitionCalcul
 		}
 	}
 
-
-	/**
-	 * Recursive method walking the dependency graph depth first in order to build a a set of
-	 * dependencies ordered by their transitivity depth.
-	 *
-	 * @param dependencyMap The ordered set of dependencies being built
-	 * @param resolvedComponentResult The dependency to process
-	 */
+    /**
+     * Recursive method walking the dependency graph depth first in order to
+     * build a a set of dependencies ordered by their transitivity depth.
+     *
+     * @param feature
+     * @param dependencyMap
+     * @param resolvedComponentResult
+     * @param extension
+     * @param includeResolvedComponentResult
+     * @param processedComponents
+     */
 	static void collectOrderedDependencies(
 			FeatureDescriptor feature,
 			Map<ModuleVersionIdentifier,BundleDescriptor> dependencyMap,

@@ -118,8 +118,8 @@ class KarafFeaturesSpec extends Specification {
                 tasks.create(name: 'jar', type: Jar){}
             }
             GroovyMock(BundleDefinitionCalculatorMvnImpl, global: true)
-            
-            BundleDefinitionCalculatorMvnImpl.hasOsgiManifestHeaders() >> true
+
+            BundleDefinitionCalculatorMvnImpl.hasOsgiManifestHeaders(_) >> true
             BundleDefinitionCalculatorMvnImpl.collectDependencies(_, _, _, _, _) >> {
                 feature, orderedDependencyMap, configuration, extension, includeRoot ->
                     def mv = new DefaultModuleVersionIdentifier(subProject.group, subProject.name, subProject.version)

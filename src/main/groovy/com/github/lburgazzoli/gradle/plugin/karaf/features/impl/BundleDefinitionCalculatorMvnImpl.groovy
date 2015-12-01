@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 package com.github.lburgazzoli.gradle.plugin.karaf.features.impl
+
 import com.github.lburgazzoli.gradle.plugin.karaf.features.BundleDefinition
 import com.github.lburgazzoli.gradle.plugin.karaf.features.BundleDefinitionCalculator
 import com.github.lburgazzoli.gradle.plugin.karaf.features.KarafFeaturesTaskExtension
@@ -26,9 +27,14 @@ import org.gradle.api.artifacts.result.ResolvedComponentResult
 import org.gradle.api.artifacts.result.ResolvedDependencyResult
 import org.gradle.jvm.tasks.Jar
 
+import java.util.jar.JarFile
+import java.util.jar.Manifest
+
 import static com.github.lburgazzoli.gradle.plugin.karaf.features.KarafFeaturesUtils.asModuleVersionIdentifier
-import static com.github.lburgazzoli.gradle.plugin.karaf.features.KarafFeaturesUtils.hasOsgiManifestHeaders
+import static com.github.lburgazzoli.gradle.plugin.karaf.features.KarafFeaturesUtils.hasAttribute
+
 /**
+ * @author Luca Burgazzoli
  * @author Steve Ebersole
  * @author Sergey Nekhviadovich
  */
@@ -37,6 +43,7 @@ public class BundleDefinitionCalculatorMvnImpl implements BundleDefinitionCalcul
 	 * Singleton access
 	 */
 	public static final BundleDefinitionCalculatorMvnImpl INSTANCE = new BundleDefinitionCalculatorMvnImpl();
+
 
 	@Override
 	public List<BundleDefinition> calculate(
@@ -49,7 +56,7 @@ public class BundleDefinitionCalculatorMvnImpl implements BundleDefinitionCalcul
 		//		  ResolvedComponentResult does not properly implement equals/hashCode in terms
 		//		  of GAV which is what we need this uniquely based on.  So for now we use
 		//		  a LinkedHashMap keyed by the GAV.
-		LinkedHashMap<ModuleVersionIdentifier,BundleDescriptor> dependencyMap = new LinkedHashMap<ModuleVersionIdentifier,BundleDescriptor>()
+		Map<ModuleVersionIdentifier,BundleDescriptor> dependencyMap = new LinkedHashMap<ModuleVersionIdentifier,BundleDescriptor>()
 
 		collectDependencies( feature, dependencyMap, extraBundles, extension, false )
 
@@ -61,7 +68,7 @@ public class BundleDefinitionCalculatorMvnImpl implements BundleDefinitionCalcul
 		// We have finalOrderedDependencyMap for result dependencies.
         // We add there root projects and full projects where transitive dependencies included
 		// To exclude transitive dependencies we have temporary orderedDependencyMap
-		LinkedHashMap<ModuleVersionIdentifier,BundleDescriptor> finalDependencyMap = new LinkedHashMap<ModuleVersionIdentifier,BundleDescriptor>()
+        Map<ModuleVersionIdentifier,BundleDescriptor> finalDependencyMap = new LinkedHashMap<ModuleVersionIdentifier,BundleDescriptor>()
         finalDependencyMap.putAll(dependencyMap)
 
 		def projectIdentifiersMap = [:]
@@ -85,7 +92,7 @@ public class BundleDefinitionCalculatorMvnImpl implements BundleDefinitionCalcul
 
         dependencyMap.each { k, v ->
 			if ( k in projectIdentifiersMap ) {
-                finalDependencyMap.put( k, projectIdentifiersMap.get( k ))
+                finalDependencyMap[k] = projectIdentifiersMap[k]
 			}
 		}
 
@@ -108,6 +115,14 @@ public class BundleDefinitionCalculatorMvnImpl implements BundleDefinitionCalcul
         }
 	}
 
+    /**
+     *
+     * @param feature
+     * @param dependencyMap
+     * @param configuration
+     * @param extension
+     * @param includeRoot
+     */
 	static void collectDependencies(
 			FeatureDescriptor feature,
 			Map<ModuleVersionIdentifier,BundleDescriptor> dependencyMap,
@@ -178,6 +193,12 @@ public class BundleDefinitionCalculatorMvnImpl implements BundleDefinitionCalcul
 		}
 	}
 
+    /**
+     *
+     * @param versionIdentifier
+     * @param feature
+     * @return
+     */
 	static BundleInstructionDescriptor findBundleInstructions(ModuleVersionIdentifier versionIdentifier, FeatureDescriptor feature) {
 		for ( BundleInstructionDescriptor it : feature.bundles ) {
 			if ( it.matcher.matches( versionIdentifier ) ) {
@@ -188,6 +209,13 @@ public class BundleDefinitionCalculatorMvnImpl implements BundleDefinitionCalcul
 		return null
 	}
 
+    /**
+     *
+     * @param bundleDescriptor
+     * @param bundleInstructionDescriptor
+     * @param resolvedBundleArtifact
+     * @return
+     */
 	static String renderUrl(
 			BundleDescriptor bundleDescriptor,
 			BundleInstructionDescriptor bundleInstructionDescriptor,
@@ -220,8 +248,33 @@ public class BundleDefinitionCalculatorMvnImpl implements BundleDefinitionCalcul
 		return bundleUrl
 	}
 
+    /**
+     *
+     * @param bundleCoordinates
+     * @return
+     */
 	public static String baseMvnUrl(BundleDescriptor bundleCoordinates) {
 		def gnv = "${bundleCoordinates.version.group}/${bundleCoordinates.version.name}/${bundleCoordinates.version.version}";
         return bundleCoordinates.isWar() ? "mvn:${gnv}/war" : "mvn:${gnv}"
+    }
+
+    /**
+     *
+     * @param file
+     * @return
+     */
+    public static boolean hasOsgiManifestHeaders(File file) {
+        JarFile jarFile = new JarFile( file )
+        Manifest manifest = jarFile.getManifest()
+        if ( manifest != null ) {
+            if ( hasAttribute( manifest, "Bundle-SymbolicName" ) ) {
+                return true
+            }
+            if ( hasAttribute( manifest, "Bundle-Name" ) ) {
+                return true
+            }
+        }
+
+        return false
     }
 }

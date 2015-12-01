@@ -1,5 +1,5 @@
 /*
- * Copyright 2013, contributors as indicated by the @author tags
+ * Copyright 2015, contributors as indicated by the @author tags
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,7 +19,6 @@ import org.gradle.api.Project
 import org.gradle.api.artifacts.ModuleVersionIdentifier
 import org.gradle.api.internal.artifacts.DefaultModuleVersionIdentifier
 
-import java.util.jar.JarFile
 import java.util.jar.Manifest
 
 /**
@@ -33,21 +32,6 @@ class KarafFeaturesUtils {
             "${project.name}",
             "${project.version}"
         )
-    }
-
-    public static boolean hasOsgiManifestHeaders(File file) {
-        JarFile jarFile = new JarFile( file )
-        Manifest manifest = jarFile.getManifest()
-        if ( manifest != null ) {
-            if ( hasAttribute( manifest, "Bundle-SymbolicName" ) ) {
-                return true
-            }
-            if ( hasAttribute( manifest, "Bundle-Name" ) ) {
-                return true
-            }
-        }
-
-        return false
     }
 
     public static boolean hasAttribute(Manifest manifest, String attributeName) {

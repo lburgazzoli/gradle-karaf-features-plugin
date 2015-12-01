@@ -16,6 +16,7 @@
 package com.github.lburgazzoli.gradle.plugin.karaf.features
 
 import com.github.lburgazzoli.gradle.plugin.karaf.features.impl.BundleDefinitionCalculatorMvnImpl
+import groovy.util.logging.Slf4j
 import org.gradle.api.Project
 import org.gradle.api.artifacts.result.ComponentSelectionReason
 import org.gradle.api.artifacts.result.ResolvedComponentResult
@@ -28,7 +29,12 @@ import spock.lang.Specification
  * @author Luca Burgazzoli
  * @author Sergey Nekhviadovich
  */
+@Slf4j
 class KarafFeaturesSpec extends Specification {
+
+    // *************************************************************************
+    //
+    // *************************************************************************
 
     def 'Apply plugin'() {
         given:
@@ -58,6 +64,9 @@ class KarafFeaturesSpec extends Specification {
             feature.bundle('com.squareup.retrofit:converter-jackson') {
                 include = false
             }
+            feature.bundle('org.apache.activemq:activemq-web') {
+                type = 'war'
+            }
 
             def featuresStr = task.generateFeatures()
             def featuresXml = new XmlSlurper().parseText(featuresStr)
@@ -65,7 +74,7 @@ class KarafFeaturesSpec extends Specification {
             featuresStr != null
             featuresXml != null
 
-            println featuresStr
+            log.info("${featuresStr}")
 
             featuresXml.feature.@name == 'karaf-features-simple-project'
             featuresXml.feature.@description == 'feature-description'
@@ -79,6 +88,9 @@ class KarafFeaturesSpec extends Specification {
                 }.size() == 1
             featuresXml.feature.bundle.'**'.findAll {
                     it.text().contains('mvn:com.squareup.retrofit/retrofit/1.9.0')
+                }.size() == 1
+            featuresXml.feature.bundle.'**'.findAll {
+                    it.text().contains('mvn:org.apache.activemq/activemq-web/5.12.1/war')
                 }.size() == 1
             featuresXml.feature.bundle.'**'.findAll {
                     it.text().contains('mvn:org.apache.activemq/activemq-web-console/5.12.1/war')
@@ -140,7 +152,7 @@ class KarafFeaturesSpec extends Specification {
             featuresStr != null
             featuresXml != null
 
-            println featuresStr
+            log.info("${featuresStr}")
 
             feature.projectDescriptors.size() == 1
             def pd = feature.projectDescriptors[0];
@@ -177,7 +189,7 @@ class KarafFeaturesSpec extends Specification {
             featuresStr != null
             featuresXml != null
 
-            println featuresStr
+            log.info("${featuresStr}")
 
             featuresXml.feature.@name == 'karaf-features-simple-project'
             featuresXml.feature.@description == 'feature-description'
@@ -215,7 +227,7 @@ class KarafFeaturesSpec extends Specification {
             featuresStr != null
             featuresXml != null
 
-            println featuresStr
+            log.info("${featuresStr}")
 
             featuresXml.feature.@name == 'karaf-features-simple-project'
             featuresXml.feature.@description == 'feature-description'
@@ -262,6 +274,7 @@ class KarafFeaturesSpec extends Specification {
             compile "com.google.guava:guava:18.0"
             compile "com.squareup.retrofit:retrofit:1.9.0"
             compile "com.squareup.retrofit:converter-jackson:1.9.0"
+            compile "org.apache.activemq:activemq-web:5.12.1"
             compile "org.apache.activemq:activemq-web-console:5.12.1@war"
 
             myAdditionalDependencies "commons-lang:commons-lang:2.6"

@@ -50,6 +50,7 @@ ext {
     }
 
     versions = [
+        slf4j : '1.7.13',
         spock : '1.0-groovy-2.4'
     ]
 }
@@ -61,6 +62,7 @@ repositories {
 }
 
 dependencies {
+
     compile gradleApi()
     compile localGroovy()
 

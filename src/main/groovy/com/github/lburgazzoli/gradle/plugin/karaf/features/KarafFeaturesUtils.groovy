@@ -19,15 +19,39 @@ import org.gradle.api.Project
 import org.gradle.api.artifacts.ModuleVersionIdentifier
 import org.gradle.api.internal.artifacts.DefaultModuleVersionIdentifier
 
+import java.util.jar.JarFile
+import java.util.jar.Manifest
+
 /**
  * @author lburgazzoli
  */
 class KarafFeaturesUtils {
+
     public static ModuleVersionIdentifier asModuleVersionIdentifier(Project project) {
         new DefaultModuleVersionIdentifier(
             "${project.group}",
             "${project.name}",
             "${project.version}"
         )
+    }
+
+    public static boolean hasOsgiManifestHeaders(File file) {
+        JarFile jarFile = new JarFile( file )
+        Manifest manifest = jarFile.getManifest()
+        if ( manifest != null ) {
+            if ( hasAttribute( manifest, "Bundle-SymbolicName" ) ) {
+                return true
+            }
+            if ( hasAttribute( manifest, "Bundle-Name" ) ) {
+                return true
+            }
+        }
+
+        return false
+    }
+
+    public static boolean hasAttribute(Manifest manifest, String attributeName) {
+        String value = manifest.mainAttributes.getValue( attributeName )
+        return value != null && !value.trim().isEmpty()
     }
 }

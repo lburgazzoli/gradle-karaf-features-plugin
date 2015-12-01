@@ -14,11 +14,9 @@
  * limitations under the License.
  */
 package com.github.lburgazzoli.gradle.plugin.karaf.features.impl
-
 import com.github.lburgazzoli.gradle.plugin.karaf.features.BundleDefinition
 import com.github.lburgazzoli.gradle.plugin.karaf.features.BundleDefinitionCalculator
 import com.github.lburgazzoli.gradle.plugin.karaf.features.KarafFeaturesTaskExtension
-import com.github.lburgazzoli.gradle.plugin.karaf.features.KarafFeaturesUtils
 import com.github.lburgazzoli.gradle.plugin.karaf.features.model.BundleDescriptor
 import com.github.lburgazzoli.gradle.plugin.karaf.features.model.BundleInstructionDescriptor
 import com.github.lburgazzoli.gradle.plugin.karaf.features.model.FeatureDescriptor
@@ -28,9 +26,8 @@ import org.gradle.api.artifacts.result.ResolvedComponentResult
 import org.gradle.api.artifacts.result.ResolvedDependencyResult
 import org.gradle.jvm.tasks.Jar
 
-import java.util.jar.JarFile
-import java.util.jar.Manifest
-
+import static com.github.lburgazzoli.gradle.plugin.karaf.features.KarafFeaturesUtils.asModuleVersionIdentifier
+import static com.github.lburgazzoli.gradle.plugin.karaf.features.KarafFeaturesUtils.hasOsgiManifestHeaders
 /**
  * @author Steve Ebersole
  * @author Sergey Nekhviadovich
@@ -67,7 +64,7 @@ public class BundleDefinitionCalculatorMvnImpl implements BundleDefinitionCalcul
 		LinkedHashMap<ModuleVersionIdentifier,BundleDescriptor> finalDependencyMap = new LinkedHashMap<ModuleVersionIdentifier,BundleDescriptor>()
         finalDependencyMap.putAll(dependencyMap)
 
-		Map<ModuleVersionIdentifier, BundleDescriptor> projectIdentifiersMap = new HashMap<ModuleVersionIdentifier, BundleDescriptor>()
+		def projectIdentifiersMap = [:]
 
 		(feature.projectDescriptors ?: [ feature.project ]).each { projectDescriptor ->
 			collectDependencies(
@@ -77,7 +74,7 @@ public class BundleDefinitionCalculatorMvnImpl implements BundleDefinitionCalcul
                 extension,
                 true )
 
-            def projectVersionId = KarafFeaturesUtils.asModuleVersionIdentifier(projectDescriptor.project);
+            def projectVersionId = asModuleVersionIdentifier(projectDescriptor.project);
 			projectIdentifiersMap[ projectVersionId ] = new BundleDescriptor(
                 "${projectDescriptor.project.group}",
                 projectDescriptor.artifactId ?: projectDescriptor.project.name,
@@ -117,6 +114,7 @@ public class BundleDefinitionCalculatorMvnImpl implements BundleDefinitionCalcul
 			Configuration configuration,
 			KarafFeaturesTaskExtension extension,
 			boolean includeRoot) {
+
 		collectOrderedDependencies(
             feature,
             dependencyMap,
@@ -163,12 +161,15 @@ public class BundleDefinitionCalculatorMvnImpl implements BundleDefinitionCalcul
 			return
 		}
 
-		// add dependencies first
-        resolvedComponentResult.dependencies.each {
-			if ( it instanceof ResolvedDependencyResult ) {
-                processedComponents.add(resolvedComponentResult.moduleVersion)
-                collectOrderedDependencies(feature, dependencyMap, ((ResolvedDependencyResult) it).selected, extension, true, processedComponents)
-            }
+        resolvedComponentResult.dependencies.findAll { it instanceof ResolvedDependencyResult }.each {
+            processedComponents.add(resolvedComponentResult.moduleVersion)
+            collectOrderedDependencies(
+                feature,
+                dependencyMap,
+                ((ResolvedDependencyResult) it).selected,
+                extension,
+                true,
+                processedComponents)
 		}
 
 		// then add this one (if param says to)
@@ -191,6 +192,7 @@ public class BundleDefinitionCalculatorMvnImpl implements BundleDefinitionCalcul
 			BundleDescriptor bundleDescriptor,
 			BundleInstructionDescriptor bundleInstructionDescriptor,
 			File resolvedBundleArtifact) {
+
 		String bundleUrl = baseMvnUrl( bundleDescriptor )
 
 		if ( bundleInstructionDescriptor != null) {
@@ -203,9 +205,9 @@ public class BundleDefinitionCalculatorMvnImpl implements BundleDefinitionCalcul
                 bundleUrl = "wrap:${bundleUrl}"
 
                 def sep = '?'
-                bundleInstructionDescriptor.bundleWrapInstructionsDescriptor?.instructions.entrySet().each {
+                bundleInstructionDescriptor.bundleWrapInstructionsDescriptor?.instructions.each { key , val ->
                     // do these need to be encoded?
-                    bundleUrl = "${bundleUrl}${sep}${it.key}=${it.value}"
+                    bundleUrl = "${bundleUrl}${sep}${key}=${value}"
                     sep = '&'
                 }
             }
@@ -222,24 +224,4 @@ public class BundleDefinitionCalculatorMvnImpl implements BundleDefinitionCalcul
 		def gnv = "${bundleCoordinates.version.group}/${bundleCoordinates.version.name}/${bundleCoordinates.version.version}";
         return bundleCoordinates.isWar() ? "mvn:${gnv}/war" : "mvn:${gnv}"
     }
-
-	public static boolean hasOsgiManifestHeaders(File file) {
-		JarFile jarFile = new JarFile( file );
-		Manifest manifest = jarFile.getManifest();
-		if ( manifest != null ) {
-			if ( hasAttribute( manifest, "Bundle-SymbolicName" ) ) {
-				return true;
-			}
-			if ( hasAttribute( manifest, "Bundle-Name" ) ) {
-				return true;
-			}
-		}
-
-		return false;
-	}
-
-	public static boolean hasAttribute(Manifest manifest, String attributeName) {
-		String value = manifest.mainAttributes.getValue( attributeName )
-		return value != null && !value.trim().isEmpty()
-	}
 }

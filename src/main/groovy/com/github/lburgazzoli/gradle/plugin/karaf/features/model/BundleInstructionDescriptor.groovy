@@ -92,6 +92,6 @@ class BundleInstructionDescriptor {
     }
 
     public boolean hasExplicitWarType() {
-        return type == 'jar'
+        return type == 'war'
     }
 }

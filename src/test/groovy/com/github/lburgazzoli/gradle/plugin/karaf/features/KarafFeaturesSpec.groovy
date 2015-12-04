@@ -16,6 +16,9 @@
 package com.github.lburgazzoli.gradle.plugin.karaf.features
 
 import com.github.lburgazzoli.gradle.plugin.karaf.features.impl.BundleDefinitionCalculatorMvnImpl
+import com.github.lburgazzoli.gradle.plugin.karaf.features.tasks.KarafFeaturesTask
+import com.github.lburgazzoli.gradle.plugin.karaf.features.tasks.KarafFeaturesTaskExtension
+import com.github.lburgazzoli.gradle.plugin.karaf.features.tasks.KarafKarTask
 import groovy.util.logging.Slf4j
 import org.gradle.api.Project
 import org.gradle.api.artifacts.result.ComponentSelectionReason
@@ -318,6 +321,10 @@ class KarafFeaturesSpec extends Specification {
     }
 
     def getKarafFeaturesTasks(project) {
-        project.tasks.getByName(KarafFeaturesPlugin.TASK_NAME)
+        project.tasks.getByName(KarafFeaturesTask.TASK_NAME)
+    }
+
+    def getKarafKarTasks(project) {
+        project.tasks.getByName(KarafKarTask.TASK_NAME)
     }
 }

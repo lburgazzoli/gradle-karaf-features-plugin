@@ -15,9 +15,10 @@
  */
 package com.github.lburgazzoli.gradle.plugin.karaf.features
 
-import org.gradle.api.artifacts.Configuration
-
+import com.github.lburgazzoli.gradle.plugin.karaf.features.model.BundleDescriptor
 import com.github.lburgazzoli.gradle.plugin.karaf.features.model.FeatureDescriptor
+import com.github.lburgazzoli.gradle.plugin.karaf.features.tasks.KarafFeaturesTaskExtension
+import org.gradle.api.artifacts.Configuration
 
 /**
  * Contract for calculating the bundles that should be part of a feature.
@@ -33,7 +34,7 @@ interface BundleDefinitionCalculator {
 	 * @param extraBundles
      * @return
      */
-	List<BundleDefinition> calculate(
+	List<BundleDescriptor> calculate(
 		FeatureDescriptor featureDescriptor,
 		KarafFeaturesTaskExtension extension,
 		Configuration extraBundles)

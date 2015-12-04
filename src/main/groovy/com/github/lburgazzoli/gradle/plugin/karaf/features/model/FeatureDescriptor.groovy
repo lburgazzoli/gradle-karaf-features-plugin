@@ -19,7 +19,7 @@ import org.gradle.api.Project
 import org.gradle.api.artifacts.Configuration
 import org.gradle.util.ConfigureUtil
 
-import com.github.lburgazzoli.gradle.plugin.karaf.features.KarafFeaturesTaskExtension
+import com.github.lburgazzoli.gradle.plugin.karaf.features.tasks.KarafFeaturesTaskExtension
 
 /**
  * DSL extension allowing instruction on how to produce a {@code <feature/>} entry

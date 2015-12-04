@@ -15,12 +15,11 @@
  */
 package com.github.lburgazzoli.gradle.plugin.karaf.features.impl
 
-import com.github.lburgazzoli.gradle.plugin.karaf.features.BundleDefinition
 import com.github.lburgazzoli.gradle.plugin.karaf.features.BundleDefinitionCalculator
-import com.github.lburgazzoli.gradle.plugin.karaf.features.KarafFeaturesTaskExtension
 import com.github.lburgazzoli.gradle.plugin.karaf.features.model.BundleDescriptor
 import com.github.lburgazzoli.gradle.plugin.karaf.features.model.BundleInstructionDescriptor
 import com.github.lburgazzoli.gradle.plugin.karaf.features.model.FeatureDescriptor
+import com.github.lburgazzoli.gradle.plugin.karaf.features.tasks.KarafFeaturesTaskExtension
 import org.gradle.api.artifacts.Configuration
 import org.gradle.api.artifacts.ModuleVersionIdentifier
 import org.gradle.api.artifacts.result.ResolvedComponentResult
@@ -32,7 +31,6 @@ import java.util.jar.Manifest
 
 import static com.github.lburgazzoli.gradle.plugin.karaf.features.KarafFeaturesUtils.asModuleVersionIdentifier
 import static com.github.lburgazzoli.gradle.plugin.karaf.features.KarafFeaturesUtils.hasAttribute
-
 /**
  * @author Luca Burgazzoli
  * @author Steve Ebersole
@@ -46,7 +44,7 @@ public class BundleDefinitionCalculatorMvnImpl implements BundleDefinitionCalcul
 
 
 	@Override
-	public List<BundleDefinition> calculate(
+	public List<BundleDescriptor> calculate(
             FeatureDescriptor feature,
             KarafFeaturesTaskExtension extension,
             Configuration extraBundles) {
@@ -95,23 +93,25 @@ public class BundleDefinitionCalculatorMvnImpl implements BundleDefinitionCalcul
                 finalDependencyMap[k] = projectIdentifiersMap[k]
 			}
 		}
-
-		return finalDependencyMap.values().collect { dep ->
-            final BundleInstructionDescriptor bundleInstruction = findBundleInstructions( dep.version , feature )
-
-            final String url;
-            if ( bundleInstruction != null && bundleInstruction.remap != null ) {
-                url = baseMvnUrl( bundleInstruction.remap.asModuleVersionIdentifier() )
-            } else {
-                url = renderUrl( dep, bundleInstruction, dep.path )
+        finalDependencyMap.each { k, v ->
+            if ( k in projectIdentifiersMap ) {
+                v.path = projectIdentifiersMap[k].path
             }
+        }
 
-            return BundleDefinition.forUrl(url) {
-                if(bundleInstruction) {
-                    dependency = bundleInstruction.dependency
-                    startLevel = bundleInstruction.startLevel
+		return finalDependencyMap.values().collect { bundleDescriptor ->
+            final BundleInstructionDescriptor bundleInstruction = findBundleInstructions( bundleDescriptor.version , feature )
+
+            if (bundleInstruction) {
+                if(bundleInstruction.remap) {
+                    bundleDescriptor.version = bundleInstruction.remap.asModuleVersionIdentifier()
                 }
+
+                bundleDescriptor.dependency = bundleInstruction.dependency
+                bundleDescriptor.startLevel = bundleInstruction.startLevel
             }
+
+            return renderUrl(bundleDescriptor, bundleInstruction)
         }
 	}
 
@@ -216,36 +216,35 @@ public class BundleDefinitionCalculatorMvnImpl implements BundleDefinitionCalcul
      * @param resolvedBundleArtifact
      * @return
      */
-	static String renderUrl(
+	static BundleDescriptor renderUrl(
 			BundleDescriptor bundleDescriptor,
-			BundleInstructionDescriptor bundleInstructionDescriptor,
-			File resolvedBundleArtifact) {
+			BundleInstructionDescriptor bundleInstructionDescriptor) {
 
-		String bundleUrl = baseMvnUrl( bundleDescriptor )
+        bundleDescriptor.url = baseMvnUrl( bundleDescriptor )
 
-		if ( bundleInstructionDescriptor != null) {
+		if (bundleInstructionDescriptor) {
 
             if(bundleDescriptor.isWar() || bundleInstructionDescriptor.hasExplicitWarType()) {
-                bundleUrl = "${bundleUrl}/war"
+                bundleDescriptor.url = "${bundleDescriptor.url}/war"
             }
 
 			if(bundleInstructionDescriptor.hasExplicitWrapInstructions() ) {
-                bundleUrl = "wrap:${bundleUrl}"
+                bundleDescriptor.url = "wrap:${bundleDescriptor.url}"
 
                 def sep = '?'
                 bundleInstructionDescriptor.bundleWrapInstructionsDescriptor?.instructions.each { key , val ->
                     // do these need to be encoded?
-                    bundleUrl = "${bundleUrl}${sep}${key}=${value}"
+                    bundleDescriptor.url = "${bundleDescriptor.url}${sep}${key}=${val}"
                     sep = '&'
                 }
             }
-		} else if ( resolvedBundleArtifact != null && !hasOsgiManifestHeaders( resolvedBundleArtifact ) ) {
+		} else if (bundleDescriptor && bundleDescriptor.path && !hasOsgiManifestHeaders( bundleDescriptor.path ) ) {
 			// if the resolved file does not have "proper" OSGi headers we
 			// implicitly do the wrap as a courtesy...
-			bundleUrl = "wrap:${bundleUrl}"
+            bundleDescriptor.url = "wrap:${bundleDescriptor.url}"
 		}
 
-		return bundleUrl
+		return bundleDescriptor
 	}
 
     /**

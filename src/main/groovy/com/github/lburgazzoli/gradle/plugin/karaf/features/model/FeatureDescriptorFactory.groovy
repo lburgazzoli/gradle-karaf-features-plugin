@@ -18,7 +18,7 @@ package com.github.lburgazzoli.gradle.plugin.karaf.features.model
 import org.gradle.api.NamedDomainObjectFactory
 import org.gradle.api.Project
 
-import com.github.lburgazzoli.gradle.plugin.karaf.features.KarafFeaturesTaskExtension
+import com.github.lburgazzoli.gradle.plugin.karaf.features.tasks.KarafFeaturesTaskExtension
 
 /**
  * @author Steve Ebersole

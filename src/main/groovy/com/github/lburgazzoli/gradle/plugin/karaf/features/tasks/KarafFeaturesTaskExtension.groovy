@@ -1,5 +1,5 @@
 /*
- * Copyright 2013, contributors as indicated by the @author tags
+ * Copyright 2015, Luca Burgazzoli and contributors as indicated by the @author tags
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,8 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.github.lburgazzoli.gradle.plugin.karaf.features
 
+
+package com.github.lburgazzoli.gradle.plugin.karaf.features.tasks
+
+import com.github.lburgazzoli.gradle.plugin.karaf.features.BundleStrategy
 import org.gradle.api.NamedDomainObjectContainer
 import org.gradle.api.Project
 import org.gradle.api.logging.Logger
@@ -30,30 +33,30 @@ import com.github.lburgazzoli.gradle.plugin.karaf.features.model.FeatureDescript
  * @author Sergey Nekhviadovich
  */
 class KarafFeaturesTaskExtension {
-    private final Project project
+    final Project project
 
     /**
      * The strategy for handling bundle definitions.
      */
-    def BundleStrategy bundleStrategy
+    BundleStrategy bundleStrategy
 
     /**
      * Name used for the {@code <features name="?"/>} attribute.  Default is to use the
      * name of the project to which the plugin is attached.
      */
-    def name
+    String name
     
     /**
      * Version of the xsd for target feature.xml file. Default is "1.2.0"
      * From version 1.3.0 dependency feature attribute is supported
      * @see https://karaf.apache.org/xmlns/features/v1.2.0
      */
-    def String xsdVersion
+    String xsdVersion
 
     /**
      * The output file
      */
-    def File outputFile
+    File outputFile
 
     /**
      * Define any {@code <repository/>} entries to be added to the features file.
@@ -72,7 +75,7 @@ class KarafFeaturesTaskExtension {
         this.bundleStrategy = BundleStrategy.MVN
         this.xsdVersion = "1.2.0"
         this.repositories = []
-        this.outputFile = project.file( "${project.buildDir}/karafFeatures/${project.name}-${project.version}-karaf.xml" )
+        this.outputFile = null
 
         // Create a dynamic container for FeatureDescriptor definitions by the user
         this.features = project.container( FeatureDescriptor, new FeatureDescriptorFactory( project, this ) )
@@ -86,6 +89,14 @@ class KarafFeaturesTaskExtension {
         bundleStrategy = preferObrBundles ? BundleStrategy.OBR : BundleStrategy.MVN
     }
 
+    boolean isPreferMvnBundles() {
+        return bundleStrategy == BundleStrategy.NVN
+    }
+
+    void setPreferMvnBundles(boolean preferMvnBundles) {
+        bundleStrategy = preferMvnBundles ? BundleStrategy.MVN : BundleStrategy.OBR
+    }
+
     def repository(String repository) {
         this.repositories.add(repository)
     }
@@ -97,6 +108,17 @@ class KarafFeaturesTaskExtension {
 
     def features(Closure closure) {
         features.configure( closure )
+    }
+
+    File getOutputFile() {
+        if(outputFile == null) {
+            def path = "${project.buildDir}/karafFeautures"
+            def name = "${name}-${project.version}.xml"
+
+            return new File(path, name)
+        }
+
+        return outputFile
     }
 
     Logger getLogger() {

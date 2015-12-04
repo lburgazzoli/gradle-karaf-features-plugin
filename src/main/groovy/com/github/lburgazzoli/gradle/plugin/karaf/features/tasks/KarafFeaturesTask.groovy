@@ -1,5 +1,5 @@
 /*
- * Copyright 2013, contributors as indicated by the @author tags
+ * Copyright 2015, Luca Burgazzoli and contributors as indicated by the @author tags
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,46 +13,36 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.github.lburgazzoli.gradle.plugin.karaf.features
+package com.github.lburgazzoli.gradle.plugin.karaf.features.tasks
 
 import groovy.xml.MarkupBuilder
-import org.gradle.api.DefaultTask
-import org.gradle.api.artifacts.Configuration
 import org.gradle.api.tasks.TaskAction
 import org.gradle.util.VersionNumber
 
 /**
- * The Gradle task to perform generation of a Karaf features repository file (XML or kar)
+ * The Gradle task to perform generation of a Karaf features file
  *
  * @author Luca Burgazzoli
  * @author Steve Ebersole
  * @author Sergey Nekhviadovich
  */
-class KarafFeaturesTask extends DefaultTask {
+class KarafFeaturesTask extends KarafTask {
+    public static final String TASK_NAME = "generateKarafFeatures"
     public static final String FEATURES_XMLNS_PREFIX = 'http://karaf.apache.org/xmlns/features/v'
     public static final VersionNumber XMLNS_V13 = new  VersionNumber(1, 3, 0, null)
 
-    private KarafFeaturesTaskExtension extension_;
-    private Configuration extraBundles_;
-
-    public KarafFeaturesTask() {
-        super();
-    }
-
     @TaskAction
-    def generateFeaturesFile() {
-        project.logger.debug("Karaf features task start");
+    def run() {
+        File outputFile = extension.getOutputFile()
 
-        if(extension.outputFile != null) {
-            // write out a features repository xml.
-            extension.outputFile.parentFile.mkdirs()
-
-            def out = new BufferedWriter(new FileWriter(extension.outputFile))
-            out.write(generateFeatures())
-            out.close()
-        } else {
-            println "\n${generateFeatures()}\n"
+        // write out a features repository xml.
+        if(!outputFile.parentFile.exists()) {
+            outputFile.parentFile.mkdirs()
         }
+
+        def out = new BufferedWriter(new FileWriter(outputFile))
+        out.write(generateFeatures())
+        out.close()
     }
 
     protected def generateFeatures() {
@@ -98,23 +88,5 @@ class KarafFeaturesTask extends DefaultTask {
         }
 
         return writer.toString()
-    }
-
-    def KarafFeaturesTaskExtension getExtension() {
-        // Don't keep looking it up...
-        if ( extension_ == null ) {
-            extension_ = project.extensions.findByName( KarafFeaturesPlugin.EXTENSION_NAME ) as KarafFeaturesTaskExtension
-        }
-
-        return extension_;
-    }
-
-
-    def getExtraBundles() {
-        // Don't keep looking it up...
-        if ( extraBundles_ == null ) {
-            extraBundles_ = project.configurations.findByName( KarafFeaturesPlugin.CONFIGURATION_NAME )
-        }
-        return extraBundles_;
     }
 }

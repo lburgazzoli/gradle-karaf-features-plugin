@@ -14,10 +14,14 @@
  * limitations under the License.
  */
 package com.github.lburgazzoli.gradle.plugin.karaf.features
+
+import com.github.lburgazzoli.gradle.plugin.karaf.features.tasks.KarafFeaturesTask
+import com.github.lburgazzoli.gradle.plugin.karaf.features.tasks.KarafFeaturesTaskExtension
+import com.github.lburgazzoli.gradle.plugin.karaf.features.tasks.KarafKarTask
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.Task
-import org.gradle.api.artifacts.Configuration
+
 /**
  * Plugin for integrating Karaf features generation into a build.  Execution is configured
  * through the KarafFeaturesGenTaskExtension DSL extension registered under {@code karafFeatures}
@@ -27,64 +31,39 @@ import org.gradle.api.artifacts.Configuration
  * @author Sergey Nekhviadovich
  */
 class KarafFeaturesPlugin implements Plugin<Project> {
-    public static final String PLUGIN_ID = 'com.github.lburgazzoli.karaf.features'
     public static final String CONFIGURATION_NAME = 'karafFeaturesBundles'
     public static final String EXTENSION_NAME = 'karafFeatures'
-    public static final String TASK_NAME = 'generateKarafFeatures'
 
     @Override
     void apply(Project project) {
-        project.logger.debug("Karaf features plugin apply");
-        Configuration configuration = project.configurations.maybeCreate( CONFIGURATION_NAME )
-        KarafFeaturesTaskExtension extension = project.extensions.create( EXTENSION_NAME, KarafFeaturesTaskExtension, project )
-        Task task = project.task( TASK_NAME, type: KarafFeaturesTask )
+        def configuration = project.configurations.maybeCreate( CONFIGURATION_NAME )
+        def extension = project.extensions.create( EXTENSION_NAME, KarafFeaturesTaskExtension, project )
 
-        project.afterEvaluate {
-            if ( extension.features.empty ) {
-                project.logger.warn("Karaf features plugin: features empty for project '${project.name}'");
+        def featuresTask = project.task( KarafFeaturesTask.TASK_NAME, type: KarafFeaturesTask )
+        def karTask = project.task( KarafKarTask.TASK_NAME, type: KarafKarTask )
 
-                // no features were added, so do the "default" bit...
-                /* TODO: fix
-                project.logger.warn("Karaf features plugin: features empty for project '${project.name}', adding default");
-                extension.features {
-                    feature {
-                        name = project.name
-                        //projects = [project]
-                        project.subprojects.each {
-                            project.logger.debug("Karaf features plugin: adding default feature ${project.name}, it = ${it}");
-                            //project( it )
-                        }
-                    }
-                }
-                */
-            } else {
-                task.inputs.files(configuration)
+        afterEvaluate(project, featuresTask, extension)
+        afterEvaluate(project, karTask, extension)
+    }
 
-                extension.features.each { feature ->
-                    project.logger.debug("Karaf feature '${feature.name}' processing, projects '${feature.projectDescriptors}'");
-                    feature.configurations.each {
-                        task.inputs.files(it)
-                        task.dependsOn(it)
-                    }
-
-                    feature.projectDescriptors.each { bundleProjectDescriptor ->
-                        // we need access the jar for any project we generate feature for
-                        def bundleProject = bundleProjectDescriptor.project
-                        project.logger.debug("Karaf feature '${feature.name}' processing project '${bundleProject.name}'");
-                        task.dependsOn bundleProject.tasks.jar
-
-                        // we also want our inputs to be based on the runtime configuration
-                        task.inputs.files(bundleProject.configurations.runtime)
-                    }
-                }
-
-                // if there is an output file, add that as an output
-                if (extension.outputFile != null) {
-                    task.outputs.file(extension.outputFile)
-                }
+    private afterEvaluate(Project project, Task task, KarafFeaturesTaskExtension extension) {
+        extension.features.each { feature ->
+            feature.configurations.each {
+                task.inputs.files(it)
+                task.dependsOn(it)
             }
 
+            feature.projectDescriptors.each { descriptor ->
+                // we need access the jar for any project we generate feature for
+                task.dependsOn descriptor.project.tasks.jar
+                // we also want our descriptor.project to be based on the runtime configuration
+                task.inputs.files(descriptor.project.configurations.runtime)
+            }
         }
-        project.logger.debug("Karaf features finish");
+
+        // if there is an output file, add that as an output
+        if (extension.outputFile != null) {
+            task.outputs.file(extension.outputFile)
+        }
     }
 }

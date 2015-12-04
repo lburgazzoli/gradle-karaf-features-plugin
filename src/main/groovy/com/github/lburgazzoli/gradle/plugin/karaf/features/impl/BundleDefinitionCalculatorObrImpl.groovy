@@ -15,9 +15,12 @@
  */
 package com.github.lburgazzoli.gradle.plugin.karaf.features.impl
 
-import com.github.lburgazzoli.gradle.plugin.karaf.features.BundleDefinition
 import com.github.lburgazzoli.gradle.plugin.karaf.features.BundleDefinitionCalculator
-import com.github.lburgazzoli.gradle.plugin.karaf.features.KarafFeaturesTaskExtension
+import com.github.lburgazzoli.gradle.plugin.karaf.features.model.BundleDescriptor
+import com.github.lburgazzoli.gradle.plugin.karaf.features.model.BundleInstructionDescriptor
+import com.github.lburgazzoli.gradle.plugin.karaf.features.model.FeatureDescriptor
+import com.github.lburgazzoli.gradle.plugin.karaf.features.model.ProjectDescriptor
+import com.github.lburgazzoli.gradle.plugin.karaf.features.tasks.KarafFeaturesTaskExtension
 import org.gradle.api.artifacts.Configuration
 import org.gradle.api.artifacts.ModuleVersionIdentifier
 import org.gradle.api.artifacts.result.DependencyResult
@@ -25,10 +28,6 @@ import org.gradle.api.artifacts.result.ResolvedComponentResult
 import org.gradle.api.artifacts.result.ResolvedDependencyResult
 import org.gradle.api.artifacts.result.UnresolvedDependencyResult
 import org.gradle.api.internal.artifacts.DefaultModuleVersionIdentifier
-
-import com.github.lburgazzoli.gradle.plugin.karaf.features.model.BundleInstructionDescriptor
-import com.github.lburgazzoli.gradle.plugin.karaf.features.model.FeatureDescriptor
-import com.github.lburgazzoli.gradle.plugin.karaf.features.model.ProjectDescriptor
 
 /**
  * @author Steve Ebersole
@@ -41,10 +40,14 @@ class BundleDefinitionCalculatorObrImpl implements BundleDefinitionCalculator {
 	public static final BundleDefinitionCalculatorObrImpl INSTANCE = new BundleDefinitionCalculatorObrImpl();
 
 	@Override
-	List<BundleDefinition> calculate(
+	List<BundleDescriptor> calculate(
 			FeatureDescriptor feature,
 			KarafFeaturesTaskExtension extension,
 			Configuration extraBundles) {
+
+		throw new UnsupportedOperationException("TBD")
+
+        /*
 		LinkedHashSet<ModuleVersionIdentifier> dependencies = []
 		collectDependencies( feature, dependencies, extraBundles, null )
 		feature.configurations.each {
@@ -71,6 +74,7 @@ class BundleDefinitionCalculatorObrImpl implements BundleDefinitionCalculator {
 		}
 
 		return bundleDefinitions
+		*/
 	}
 
 	def static collectDependencies(

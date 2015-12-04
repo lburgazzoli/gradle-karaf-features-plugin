@@ -18,6 +18,7 @@ package com.github.lburgazzoli.gradle.plugin.karaf.features.model
 import org.gradle.api.artifacts.ModuleVersionIdentifier
 import org.gradle.api.artifacts.result.ResolvedComponentResult
 import org.gradle.api.internal.artifacts.DefaultModuleVersionIdentifier
+
 /**
  * @author lburgazzoli
  */
@@ -26,6 +27,9 @@ class BundleDescriptor {
     ModuleVersionIdentifier version
     String type
     File path
+    String url
+    String startLevel
+    Boolean dependency
 
     public BundleDescriptor(String group, String artifact, String version) {
         this(new DefaultModuleVersionIdentifier(group, artifact, version), null, 'jar')

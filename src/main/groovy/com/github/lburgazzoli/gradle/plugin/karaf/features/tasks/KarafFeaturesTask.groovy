@@ -15,7 +15,10 @@
  */
 package com.github.lburgazzoli.gradle.plugin.karaf.features.tasks
 
+import com.github.lburgazzoli.gradle.plugin.karaf.features.KarafFeaturesUtils
 import groovy.xml.MarkupBuilder
+import org.gradle.api.DefaultTask
+import org.gradle.api.artifacts.Configuration
 import org.gradle.api.tasks.TaskAction
 import org.gradle.util.VersionNumber
 
@@ -26,10 +29,14 @@ import org.gradle.util.VersionNumber
  * @author Steve Ebersole
  * @author Sergey Nekhviadovich
  */
-class KarafFeaturesTask extends KarafTask {
+class KarafFeaturesTask extends DefaultTask {
     public static final String TASK_NAME = "generateKarafFeatures"
     public static final String FEATURES_XMLNS_PREFIX = 'http://karaf.apache.org/xmlns/features/v'
     public static final VersionNumber XMLNS_V13 = new  VersionNumber(1, 3, 0, null)
+
+    private KarafFeaturesTaskExtension extension_;
+    private Configuration extraBundles_;
+
 
     @TaskAction
     def run() {
@@ -45,7 +52,7 @@ class KarafFeaturesTask extends KarafTask {
         out.close()
     }
 
-    protected def generateFeatures() {
+    protected String generateFeatures() {
         def writer = new StringWriter()
 
         def builder = new MarkupBuilder(writer)
@@ -88,5 +95,24 @@ class KarafFeaturesTask extends KarafTask {
         }
 
         return writer.toString()
+    }
+
+    def KarafFeaturesTaskExtension getExtension() {
+        // Don't keep looking it up...
+        if (extension_ == null) {
+            extension_ = KarafFeaturesUtils.lookupExtension(project)
+        }
+
+        return extension_;
+    }
+
+
+    def getExtraBundles() {
+        // Don't keep looking it up...
+        if (extraBundles_ == null) {
+            extraBundles_ = KarafFeaturesUtils.lookupExtraBundlesConfiguration(project)
+        }
+
+        return extraBundles_;
     }
 }

@@ -15,7 +15,9 @@
  */
 package com.github.lburgazzoli.gradle.plugin.karaf.features
 
+import com.github.lburgazzoli.gradle.plugin.karaf.features.tasks.KarafFeaturesTaskExtension
 import org.gradle.api.Project
+import org.gradle.api.artifacts.Configuration
 import org.gradle.api.artifacts.ModuleVersionIdentifier
 import org.gradle.api.internal.artifacts.DefaultModuleVersionIdentifier
 
@@ -25,6 +27,14 @@ import java.util.jar.Manifest
  * @author lburgazzoli
  */
 class KarafFeaturesUtils {
+
+    public static KarafFeaturesTaskExtension lookupExtension(Project project) {
+        return project.extensions.findByName(KarafFeaturesPlugin.EXTENSION_NAME) as KarafFeaturesTaskExtension
+    }
+
+    public static Configuration lookupExtraBundlesConfiguration(Project project) {
+        return project.configurations.findByName(KarafFeaturesPlugin.CONFIGURATION_NAME)
+    }
 
     public static ModuleVersionIdentifier asModuleVersionIdentifier(Project project) {
         new DefaultModuleVersionIdentifier(

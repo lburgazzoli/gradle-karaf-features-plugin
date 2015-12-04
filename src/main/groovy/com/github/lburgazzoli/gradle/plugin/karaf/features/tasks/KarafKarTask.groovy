@@ -15,6 +15,7 @@
  */
 package com.github.lburgazzoli.gradle.plugin.karaf.features.tasks
 
+import com.github.lburgazzoli.gradle.plugin.karaf.features.KarafFeaturesUtils
 import org.gradle.jvm.tasks.Jar
 /**
  * The Gradle task to perform generation of a Karaf KAR archive
@@ -31,8 +32,8 @@ class KarafKarTask extends Jar {
             root.mkdirs()
         }
 
-        def featuresExtension = KarafTask.lookupExtension(project)
-        def featuresExtras = KarafTask.lookupExtraBundlesConfiguration(project)
+        def featuresExtension = KarafFeaturesUtils.lookupExtension(project)
+        def featuresExtras = KarafFeaturesUtils.lookupExtraBundlesConfiguration(project)
         def bundleDefinitionCalculator = featuresExtension.bundleStrategy.bundleDefinitionCalculator
         
         featuresExtension.features.each { feature ->

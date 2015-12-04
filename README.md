@@ -1,5 +1,8 @@
 gradle-karaf-features-plugin
 ============================
+[![Build Status](https://travis-ci.org/lburgazzoli/gradle-karaf-features-plugin.svg)](https://travis-ci.org/lburgazzoli/gradle-karaf-features-plugin)
+[![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.github.lburgazzoli/gradle-karaf-features-plugin/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.github.lburgazzoli/gradle-karaf-features-plugin)
+[![License](http://img.shields.io/:license-apache-brightgreen.svg)](http://www.apache.org/licenses/LICENSE-2.0.html)
 
 How to use
 ============================

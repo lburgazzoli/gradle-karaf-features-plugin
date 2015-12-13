@@ -24,6 +24,7 @@ import org.gradle.api.artifacts.Configuration
 import org.gradle.api.artifacts.ModuleVersionIdentifier
 import org.gradle.api.artifacts.result.ResolvedComponentResult
 import org.gradle.api.artifacts.result.ResolvedDependencyResult
+import org.gradle.api.plugins.WarPlugin
 import org.gradle.jvm.tasks.Jar
 
 import java.util.jar.JarFile
@@ -84,8 +85,10 @@ public class BundleDefinitionCalculatorMvnImpl implements BundleDefinitionCalcul
                 "${projectDescriptor.project.group}",
                 projectDescriptor.artifactId ?: projectDescriptor.project.name,
                 "${projectDescriptor.project.version}",
-                (projectDescriptor.project.tasks.jar as Jar ).archivePath
-            )
+                (projectDescriptor.project.tasks.jar as Jar ).archivePath,
+                projectDescriptor.project.plugins.hasPlugin(WarPlugin) ? 'war' : 'jar',
+                projectDescriptor.startLevel
+      )
 		}
 
         dependencyMap.each { k, v ->

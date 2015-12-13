@@ -93,7 +93,7 @@ class FeatureDescriptor {
     }
 
 	def project(String projectName, Closure closure) {
-		this.project.project.allprojects.find {it.name == projectName || ":${it.name}" == projectName }.each {
+		this.project.project.rootProject.allprojects.find {it.name == projectName || ":${it.name}" == projectName }.each {
             Project project -> this.addProject(project, closure)
 		}
 	}

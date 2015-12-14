@@ -35,8 +35,10 @@ class BundleDescriptor {
         this(new DefaultModuleVersionIdentifier(group, artifact, version), null, 'jar')
     }
 
-    public BundleDescriptor(String group, String artifact, String version, File path) {
-        this(new DefaultModuleVersionIdentifier(group, artifact, version), path, 'jar')
+    public BundleDescriptor(String group, String artifact, String version, File path,
+                            String type, String startLevel) {
+        this(new DefaultModuleVersionIdentifier(group, artifact, version), path, type)
+        this.startLevel = startLevel
     }
 
     public BundleDescriptor(ResolvedComponentResult result) {

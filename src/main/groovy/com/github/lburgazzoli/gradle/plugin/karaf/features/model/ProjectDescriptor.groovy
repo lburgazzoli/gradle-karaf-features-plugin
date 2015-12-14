@@ -49,6 +49,8 @@ class ProjectDescriptor {
 	 */
 	def String artifactId
 
+	def String startLevel
+
 	ProjectDescriptor(Project project) {
 		this.project = project
 		this.dependenciesDescriptor = new ProjectDependenciesDescriptor()

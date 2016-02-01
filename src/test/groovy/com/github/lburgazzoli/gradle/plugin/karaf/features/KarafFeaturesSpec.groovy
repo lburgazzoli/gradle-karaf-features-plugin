@@ -16,6 +16,7 @@
 package com.github.lburgazzoli.gradle.plugin.karaf.features
 
 import com.github.lburgazzoli.gradle.plugin.karaf.features.impl.BundleDefinitionCalculatorMvnImpl
+import com.github.lburgazzoli.gradle.plugin.karaf.features.model.BundleDescriptor
 import com.github.lburgazzoli.gradle.plugin.karaf.features.tasks.KarafFeaturesTask
 import com.github.lburgazzoli.gradle.plugin.karaf.features.tasks.KarafFeaturesTaskExtension
 import com.github.lburgazzoli.gradle.plugin.karaf.features.tasks.KarafKarTask
@@ -118,7 +119,8 @@ class KarafFeaturesSpec extends Specification {
                 runtime
             }
             subProject.configure([subProject]) {
-                tasks.create(name: 'jar', type: Jar){}
+                tasks.create(name: 'jar', type: Jar){archiveName = 'test.jar'}
+                
             }
             GroovyMock(BundleDefinitionCalculatorMvnImpl, global: true)
 
@@ -127,9 +129,12 @@ class KarafFeaturesSpec extends Specification {
                 feature, orderedDependencyMap, configuration, extension, includeRoot ->
                     def mv = new DefaultModuleVersionIdentifier(subProject.group, subProject.name, subProject.version)
                     def result = Mock(ResolvedComponentResult)
+                    def jarFile = new File("test.jar")
+                    jarFile.text = "test"
+                    def descriptor = new BundleDescriptor(mv, jarFile, 'jar')
                     result.getModuleVersion() >> mv
                     result.getSelectionReason() >> Mock(ComponentSelectionReason)
-                    orderedDependencyMap.put(mv, result)
+                    orderedDependencyMap.put(mv, descriptor)
             }
             BundleDefinitionCalculatorMvnImpl.baseMvnUrl(_) >> 'mvn:test.pkg/sub1/1.2.3'
             
@@ -151,6 +156,7 @@ class KarafFeaturesSpec extends Specification {
 
             def featuresStr = task.generateFeatures()
             def featuresXml = new XmlSlurper().parseText(featuresStr)
+            new File("test.jar").delete()
         then:
             featuresStr != null
             featuresXml != null

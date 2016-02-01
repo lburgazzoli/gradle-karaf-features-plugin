@@ -112,9 +112,13 @@ public class BundleDefinitionCalculatorMvnImpl implements BundleDefinitionCalcul
 
                 bundleDescriptor.dependency = bundleInstruction.dependency
                 bundleDescriptor.startLevel = bundleInstruction.startLevel
+            } else if (bundleDescriptor && bundleDescriptor.path && !bundleDescriptor.path.exists()) {
+                return null;
             }
 
             return renderUrl(bundleDescriptor, bundleInstruction)
+        }.findAll {
+            it != null
         }
 	}
 

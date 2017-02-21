@@ -4,6 +4,8 @@ gradle-karaf-features-plugin
 [![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.github.lburgazzoli/gradle-karaf-features-plugin/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.github.lburgazzoli/gradle-karaf-features-plugin)
 [![License](http://img.shields.io/:license-apache-brightgreen.svg)](http://www.apache.org/licenses/LICENSE-2.0.html)
 
+***This plugin is not more maintaned and its features have been incuded in https://github.com/lburgazzoli/gradle-karaf-plugin***
+
 How to use
 ============================
 build.gradle
